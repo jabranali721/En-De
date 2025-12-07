@@ -230,6 +230,18 @@ header {
     margin-top: 15px; 
 }
 
+/* Bottone Override (appare solo se sbagli) */
+.override-btn {
+    background: #ffc107; color: #333; 
+    border: none; padding: 5px 10px; 
+    margin-top: 10px; border-radius: 4px; 
+    font-size: 12px; cursor: pointer;
+}
+.override-btn:hover { background: #e0a800; }
+
+/* Icona Audio */
+.audio-btn { font-size: 20px; cursor: pointer; margin-left: 10px; background: none; border: none;}
+
 
 
 /* Responsive Design */

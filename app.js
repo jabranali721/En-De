@@ -127,22 +127,83 @@ function checkAnswer() {
     const userVal = input.value.trim().toLowerCase();
     const correctVal = currentCard.a.trim().toLowerCase();
 
+    // Aggiorna tentativi
     if (!userStats[currentCard.q]) userStats[currentCard.q] = { level: 0, tries: 0 };
     userStats[currentCard.q].tries++;
 
     if (userVal === correctVal) {
-        feedback.textContent = "✅ Esatto!";
+        // --- CASO CORRETTO ---
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
         feedback.className = 'success';
+        
+        // Aumenta livello (max 5)
         if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
+        
+        // Parla in automatico quando indovini
+        speak(currentCard.a);
+        
+        saveAndNext();
+        
     } else {
-        feedback.textContent = `❌ No! Era: ${currentCard.a}`;
+        // --- CASO SBAGLIATO ---
+        // Mostriamo errore MA con opzione di "Recupero"
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        const displayAnswer = currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        feedback.innerHTML = `
+            ❌ No! Era: <b>${displayAnswer}</b> 
+            <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
+            <br>
+            <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>
+        `;
         feedback.className = 'error';
-        userStats[currentCard.q].level = 0; // Reset se sbagli
-    }
+        
+        // Parla anche se sbagli, così impari la pronuncia
+        speak(currentCard.a);
 
+        // Penalità temporanea (verrà salvata solo se non clicchi override)
+        const oldLevel = userStats[currentCard.q].level; // Salviamo il livello vecchio per sicurezza
+        userStats[currentCard.q].level = 0; 
+        localStorage.setItem('deutschStats', JSON.stringify(userStats));
+
+        // Gestione Click su "I was right"
+        document.getElementById('override-btn').onclick = function() {
+            // Ripristina e aumenta come se fosse giusto
+            userStats[currentCard.q].level = oldLevel < 5 ? oldLevel + 1 : 5;
+            feedback.innerHTML = `✅ Corretto manualmente!`;
+            feedback.className = 'success';
+            saveAndNext();
+        };
+
+        // Se l'utente NON clicca override, andiamo avanti tra 3 secondi (più tempo per leggere l'errore)
+        window.tempTimeout = setTimeout(nextCard, 3000);
+    }
+}
+
+function saveAndNext() {
     localStorage.setItem('deutschStats', JSON.stringify(userStats));
-    setTimeout(nextCard, 2000); // Attendi 2 secondi
+    // Se c'era un timeout pendente (dal caso errore), cancellalo
+    if(window.tempTimeout) clearTimeout(window.tempTimeout);
+    setTimeout(nextCard, 2000);
 }
 
 // Tasto Home
 homeBtn.addEventListener('click', showDashboard);
+
+// --- FUNZIONE AUDIO ---
+function speak(text) {
+    // Controlla supporto browser
+    if (!window.speechSynthesis) {
+        console.warn('Speech Synthesis API non supportata in questo browser');
+        return;
+    }
+    
+    // Interrompi se sta già parlando
+    window.speechSynthesis.cancel();
+    
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = 'de-DE'; // Imposta lingua tedesca
+    msg.rate = 0.9;     // Velocità leggermente ridotta per chiarezza
+    
+    window.speechSynthesis.speak(msg);
+}
