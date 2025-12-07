@@ -133,7 +133,7 @@ function checkAnswer() {
 
     if (userVal === correctVal) {
         // --- CASO CORRETTO ---
-        const escapedAnswer = currentCard.a.replace(/'/g, "\\'");
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
         feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
         feedback.className = 'success';
         
@@ -148,8 +148,8 @@ function checkAnswer() {
     } else {
         // --- CASO SBAGLIATO ---
         // Mostriamo errore MA con opzione di "Recupero"
-        const escapedAnswer = currentCard.a.replace(/'/g, "\\'").replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const displayAnswer = currentCard.a.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        const displayAnswer = currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         feedback.innerHTML = `
             ❌ No! Era: <b>${displayAnswer}</b> 
             <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
