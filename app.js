@@ -1,7 +1,7 @@
 let vocabDatabase = []; // Qui carichiamo il CSV
 let currentCard = null;
 let userStats = JSON.parse(localStorage.getItem('deutschStats')) || {}; 
-// Esempio struttura userStats: { "Cane": { level: 1, nextReview: 17000000000 } }
+// Esempio struttura userStats: { "Cane": { level: 1, nextReview: 1703980800000 } }
 
 const fileInput = document.getElementById('csvFile');
 const gamePanel = document.getElementById('game-panel');
@@ -45,7 +45,7 @@ function parseCSV(text) {
 function nextCard() {
     answerInput.value = '';
     feedback.classList.add('hidden');
-    feedback.className = ''; 
+    feedback.classList.remove('success', 'error'); 
     
     // Algoritmo Spaced Repetition: privilegia parole con livello basso
     // Box 1: level 0 (nuove o sbagliate)
