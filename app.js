@@ -64,7 +64,10 @@ function showDashboard() {
     setupPanel.classList.add('hidden');
     gamePanel.classList.add('hidden');
     dashboardPanel.classList.remove('hidden');
-    homeBtn.classList.remove('hidden');
+    
+    // Nascondi stats e ripristina titolo
+    document.getElementById('top-stats').classList.add('hidden');
+    document.getElementById('current-mode').textContent = 'Select Mode';
 
     modulesGrid.innerHTML = '';
     
@@ -84,7 +87,11 @@ function startGame(moduleName) {
     currentList = library[moduleName];
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
-    document.getElementById('current-module-title').textContent = "Modulo: " + moduleName;
+    
+    // AGGIUNTA: Aggiorna il titolo nella navbar e mostra stats
+    document.getElementById('current-mode').textContent = moduleName; 
+    document.getElementById('top-stats').classList.remove('hidden');
+    
     nextCard();
 }
 
