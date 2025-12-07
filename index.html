@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Tedesco</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🇩🇪 Deutsch Trainer</h1>
+        
+        <div id="setup-panel">
+            <input type="file" id="csvFile" accept=".csv">
+            <p><small>Carica il tuo file .csv per iniziare</small></p>
+        </div>
+
+        <div id="game-panel" class="hidden">
+            <div class="stats-bar">
+                <span>Livello: <b id="level">1</b></span>
+                <span>Streak: <b id="streak">0</b> 🔥</span>
+                <button id="stats-btn" class="stats-button">📊 Statistiche</button>
+            </div>
+
+            <div class="card">
+                <p class="label">Traduci in tedesco:</p>
+                <h2 id="question-text">...</h2>
+                <input type="text" id="answer-input" placeholder="Scrivi qui..." autocomplete="off">
+                <button id="check-btn">Controlla</button>
+            </div>
+
+            <div id="feedback" class="hidden"></div>
+        </div>
+
+        <div id="stats-panel" class="hidden">
+            <div class="stats-content">
+                <h2>📊 Le tue Statistiche</h2>
+                <button id="close-stats-btn" class="close-button">✖ Chiudi</button>
+                
+                <div class="stats-section">
+                    <h3>🏆 Parole Masterizzate (Livello > 5)</h3>
+                    <div id="mastered-words" class="word-list"></div>
+                </div>
+                
+                <div class="stats-section">
+                    <h3>⚠️ Parole Critiche (Livello 0)</h3>
+                    <div id="critical-words" class="word-list"></div>
+                </div>
+                
+                <div class="stats-section">
+                    <h3>📈 Tutte le Parole</h3>
+                    <div id="all-words" class="word-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
