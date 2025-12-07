@@ -2,44 +2,51 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modular Deutsch</title>
+    <title>Deutsch Type</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>🇩🇪 Modular Deutsch</h1>
-            <button id="home-btn" class="hidden">🏠 Home</button>
-        </header>
+    <nav>
+        <div class="logo">🇩🇪 <span id="current-mode">Select Mode</span></div>
+        <div class="stats-mini hidden" id="top-stats">
+            <span>Streak: <b id="streak-display">0</b></span>
+            <span> | </span>
+            <span>Word Lvl: <b id="word-level">0</b>/5</span>
+        </div>
+    </nav>
+
+    <div class="main-stage">
         
         <div id="setup-panel">
-            <div class="upload-box">
-                <input type="file" id="folderInput" webkitdirectory multiple>
-                <p>Seleziona la cartella con i tuoi CSV</p>
+            <div class="command-line">
+                <p>> Load Dictionary Source...</p>
+                <label for="folderInput" class="custom-file-upload">
+                    [ CLICK TO SELECT FOLDER ]
+                </label>
+                <input type="file" id="folderInput" webkitdirectory directory multiple>
             </div>
         </div>
 
         <div id="dashboard-panel" class="hidden">
-            <h2>Cosa vuoi studiare oggi?</h2>
-            <div id="modules-grid" class="grid-container">
+            <p class="sub-label">select_module_to_start:</p>
+            <div id="modules-grid" class="text-grid">
             </div>
         </div>
 
         <div id="game-panel" class="hidden">
-            <h3 id="current-module-title" style="color:#666; margin-bottom:10px;"></h3>
             
-            <div class="card">
-                <p class="label">Traduci:</p>
-                <h2 id="question-text">...</h2>
-                <input type="text" id="answer-input" placeholder="In tedesco..." autocomplete="off">
-                <button id="check-btn">Conferma</button>
+            <div class="typing-area">
+                <div id="question-text" class="prompt-text">caricamento...</div>
+                
+                <input type="text" id="answer-input" autocomplete="off" spellcheck="false">
+                
+                <div id="feedback" class="fade-in"></div>
             </div>
 
-            <div id="feedback" class="hidden"></div>
-            <div class="stats-footer">
-                Successo parola: <span id="word-level">0</span>/5
+            <div class="controls">
+                <button id="check-btn" class="hidden">Invio</button> <button id="home-btn" class="text-btn">ESC / dashboard</button>
             </div>
         </div>
 
