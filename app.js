@@ -19,13 +19,23 @@ folderInput.addEventListener('change', async function(e) {
     // Processiamo tutti i file caricati
     for (let file of files) {
         if (file.name.endsWith('.csv')) {
-            const text = await readFile(file); // Funzione helper sotto
-            const moduleName = file.name.replace('.csv', '').replace(/_/g, ' '); // Pulisce il nome
-            const words = parseCSV(text);
-            if (words.length > 0) {
-                library[moduleName] = words;
+            try {
+                const text = await readFile(file);
+                const moduleName = file.name.replace('.csv', '').replace(/_/g, ' ');
+                const words = parseCSV(text);
+                if (words.length > 0) {
+                    library[moduleName] = words;
+                }
+            } catch (error) {
+                console.error(`Errore nel caricamento di ${file.name}:`, error);
+                // Continua con gli altri file
             }
         }
+    }
+    
+    if (Object.keys(library).length === 0) {
+        alert('Nessun file CSV valido trovato nella cartella!');
+        return;
     }
     
     showDashboard();
@@ -83,8 +93,12 @@ function nextCard() {
     document.getElementById('feedback').className = 'hidden';
     document.getElementById('answer-input').value = '';
     
-    // Algoritmo: Mischia e cerca parole con livello basso o mai viste
-    const shuffled = [...currentList].sort(() => 0.5 - Math.random());
+    // Algoritmo: Fisher-Yates shuffle per randomizzazione corretta
+    const shuffled = [...currentList];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     
     currentCard = shuffled.find(card => {
         const stat = userStats[card.q];
