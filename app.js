@@ -5,6 +5,8 @@ let userStats = JSON.parse(localStorage.getItem('deutschStats')) || {};
 let sessionCorrectCount = 0; // Quante ne hai fatte giuste in questa sessione
 let sessionTotalGoal = 10;   // Obiettivo: fare 10 parole giuste per finire il "round"
 let hintIndex = 0; // Variabile globale per tracciare quanti aiuti usati
+let studyIndex = 0;
+let isStudyMode = false;
 
 // Elementi DOM
 const folderInput = document.getElementById('folderInput');
@@ -66,6 +68,7 @@ function parseCSV(text) {
 function showDashboard() {
     setupPanel.classList.add('hidden');
     gamePanel.classList.add('hidden');
+    document.getElementById('study-panel').classList.add('hidden');
     dashboardPanel.classList.remove('hidden');
     
     // Nascondi XP bar e ripristina titolo
@@ -76,12 +79,25 @@ function showDashboard() {
     
     // Crea un bottone per ogni categoria trovata
     Object.keys(library).forEach(moduleName => {
-        const btn = document.createElement('button');
-        btn.className = 'module-card';
-        // Aggiungi conteggio parole (es. "Supermercato (20)")
-        btn.textContent = `${moduleName.toUpperCase()} (${library[moduleName].length})`;
-        btn.onclick = () => startGame(moduleName);
-        modulesGrid.appendChild(btn);
+        const wrapper = document.createElement('div');
+        wrapper.style.marginBottom = "10px";
+
+        // Bottone Modulo (Avvia Gioco)
+        const btnPlay = document.createElement('button');
+        btnPlay.className = 'module-card';
+        btnPlay.innerHTML = `🎮 PLAY: ${moduleName.toUpperCase()}`;
+        btnPlay.onclick = () => startGame(moduleName);
+
+        // Bottone Studio (Piccolo accanto)
+        const btnStudy = document.createElement('button');
+        btnStudy.className = 'module-card';
+        btnStudy.style.borderLeft = "2px solid #555"; 
+        btnStudy.innerHTML = `📖 STUDY`;
+        btnStudy.onclick = () => startStudy(moduleName);
+
+        wrapper.appendChild(btnPlay);
+        wrapper.appendChild(btnStudy);
+        modulesGrid.appendChild(wrapper);
     });
 }
 
@@ -278,4 +294,82 @@ document.getElementById('answer-input').addEventListener('keydown', function(e) 
         e.preventDefault(); // Non cambiare focus
         showHint();
     }
+});
+
+// --- LOGICA STUDY MODE ---
+
+function startStudy(moduleName) {
+    currentList = library[moduleName];
+    studyIndex = 0;
+    isStudyMode = true;
+
+    // Gestione UI
+    dashboardPanel.classList.add('hidden');
+    document.getElementById('study-panel').classList.remove('hidden');
+    
+    loadStudyCard();
+}
+
+function loadStudyCard() {
+    const card = currentList[studyIndex];
+    const questionEl = document.getElementById('study-question');
+    const answerEl = document.getElementById('study-answer');
+    const answerBox = document.getElementById('study-answer-box');
+
+    // Reset grafica
+    questionEl.textContent = card.q;
+    answerEl.textContent = card.a;
+    answerBox.classList.remove('reveal');
+    answerBox.classList.add('hidden-content');
+}
+
+function revealCard() {
+    const answerBox = document.getElementById('study-answer-box');
+    // Se è già rivelato, non fare nulla
+    if (answerBox.classList.contains('reveal')) return;
+
+    answerBox.classList.remove('hidden-content');
+    answerBox.classList.add('reveal');
+    
+    // Parla in automatico
+    speak(currentList[studyIndex].a);
+}
+
+function nextStudyCard() {
+    if (studyIndex < currentList.length - 1) {
+        studyIndex++;
+        loadStudyCard();
+    } else {
+        // Fine mazzo -> ricomincia o avvisa
+        studyIndex = 0; // Loop infinito
+        loadStudyCard();
+    }
+}
+
+function prevStudyCard() {
+    if (studyIndex > 0) {
+        studyIndex--;
+        loadStudyCard();
+    }
+}
+
+// Event Listener Globale per tastiera (gestisce sia Gioco che Studio)
+document.addEventListener('keydown', (e) => {
+    if (!isStudyMode) return; // Se stiamo giocando, ignora questi comandi
+
+    if (e.code === 'Space') {
+        e.preventDefault(); // Evita scroll pagina
+        revealCard();
+    } else if (e.code === 'ArrowRight') {
+        nextStudyCard();
+    } else if (e.code === 'ArrowLeft') {
+        prevStudyCard();
+    }
+});
+
+// Tasto Esci
+document.getElementById('exit-study-btn').addEventListener('click', () => {
+    isStudyMode = false;
+    document.getElementById('study-panel').classList.add('hidden');
+    showDashboard();
 });
