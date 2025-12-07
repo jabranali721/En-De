@@ -133,7 +133,8 @@ function checkAnswer() {
 
     if (userVal === correctVal) {
         // --- CASO CORRETTO ---
-        feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${currentCard.a}')">🔊</button>`;
+        const escapedAnswer = currentCard.a.replace(/'/g, "\\'");
+        feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
         feedback.className = 'success';
         
         // Aumenta livello (max 5)
@@ -147,9 +148,11 @@ function checkAnswer() {
     } else {
         // --- CASO SBAGLIATO ---
         // Mostriamo errore MA con opzione di "Recupero"
+        const escapedAnswer = currentCard.a.replace(/'/g, "\\'").replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const displayAnswer = currentCard.a.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         feedback.innerHTML = `
-            ❌ No! Era: <b>${currentCard.a}</b> 
-            <button class="audio-btn" onclick="speak('${currentCard.a}')">🔊</button>
+            ❌ No! Era: <b>${displayAnswer}</b> 
+            <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
             <br>
             <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>
         `;
@@ -189,6 +192,12 @@ homeBtn.addEventListener('click', showDashboard);
 
 // --- FUNZIONE AUDIO ---
 function speak(text) {
+    // Controlla supporto browser
+    if (!window.speechSynthesis) {
+        console.warn('Speech Synthesis API non supportata in questo browser');
+        return;
+    }
+    
     // Interrompi se sta già parlando
     window.speechSynthesis.cancel();
     
