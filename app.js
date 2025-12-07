@@ -2,6 +2,9 @@ let library = {}; // Conterrà tutti i moduli: { "pane": [...], "viaggi": [...] 
 let currentList = []; // Il modulo che stai giocando ora
 let currentCard = null;
 let userStats = JSON.parse(localStorage.getItem('deutschStats')) || {};
+let sessionCorrectCount = 0; // Quante ne hai fatte giuste in questa sessione
+let sessionTotalGoal = 10;   // Obiettivo: fare 10 parole giuste per finire il "round"
+let hintIndex = 0; // Variabile globale per tracciare quanti aiuti usati
 
 // Elementi DOM
 const folderInput = document.getElementById('folderInput');
@@ -65,8 +68,8 @@ function showDashboard() {
     gamePanel.classList.add('hidden');
     dashboardPanel.classList.remove('hidden');
     
-    // Nascondi stats e ripristina titolo
-    document.getElementById('top-stats').classList.add('hidden');
+    // Nascondi XP bar e ripristina titolo
+    document.getElementById('xp-bar-container').classList.add('hidden');
     document.getElementById('current-mode').textContent = 'Select Mode';
 
     modulesGrid.innerHTML = '';
@@ -88,9 +91,13 @@ function startGame(moduleName) {
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
     
-    // AGGIUNTA: Aggiorna il titolo nella navbar e mostra stats
+    // AGGIUNTA: Aggiorna il titolo nella navbar e mostra XP bar
     document.getElementById('current-mode').textContent = moduleName; 
-    document.getElementById('top-stats').classList.remove('hidden');
+    document.getElementById('xp-bar-container').classList.remove('hidden');
+    
+    // Inizializza sessione
+    sessionCorrectCount = 0;
+    updateProgressBar();
     
     nextCard();
 }
@@ -98,7 +105,12 @@ function startGame(moduleName) {
 // Logica carta successiva (con filtro priorità)
 function nextCard() {
     document.getElementById('feedback').className = 'hidden';
-    document.getElementById('answer-input').value = '';
+    const input = document.getElementById('answer-input');
+    input.value = '';
+    
+    // Reset hint
+    hintIndex = 0;
+    input.placeholder = '';
     
     // Algoritmo: Fisher-Yates shuffle per randomizzazione corretta
     const shuffled = [...currentList];
@@ -116,10 +128,7 @@ function nextCard() {
     // Aggiorna UI
     document.getElementById('question-text').textContent = currentCard.q;
     
-    const stat = userStats[currentCard.q] || { level: 0 };
-    document.getElementById('word-level').textContent = stat.level;
-    
-    document.getElementById('answer-input').focus();
+    input.focus();
 }
 
 // --- 4. CONTROLLO ---
@@ -144,8 +153,21 @@ function checkAnswer() {
         feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
         feedback.className = 'success';
         
+        // Flash verde
+        input.classList.add('flash-correct');
+        setTimeout(() => input.classList.remove('flash-correct'), 500);
+        
         // Aumenta livello (max 5)
         if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
+        
+        // XP System
+        let currentXP = parseInt(localStorage.getItem('deutschXP') || '0');
+        currentXP += 10; // 10 XP per parola
+        localStorage.setItem('deutschXP', currentXP);
+        
+        sessionCorrectCount++;
+        updateProgressBar();
+        updateRank(currentXP);
         
         // Parla in automatico quando indovini
         speak(currentCard.a);
@@ -154,6 +176,10 @@ function checkAnswer() {
         
     } else {
         // --- CASO SBAGLIATO ---
+        // Shake animation
+        input.classList.add('shake');
+        setTimeout(() => input.classList.remove('shake'), 300);
+        
         // Mostriamo errore MA con opzione di "Recupero"
         const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
         const displayAnswer = currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -214,3 +240,42 @@ function speak(text) {
     
     window.speechSynthesis.speak(msg);
 }
+
+// --- FUNZIONI HELPER PER XP E PROGRESS BAR ---
+function updateProgressBar() {
+    const percentage = (sessionCorrectCount / sessionTotalGoal) * 100;
+    document.getElementById('progress-fill').style.width = Math.min(percentage, 100) + '%';
+    document.getElementById('total-xp').textContent = localStorage.getItem('deutschXP') || 0;
+}
+
+function updateRank(xp) {
+    // Calcolo livello semplice: ogni 100 XP sali di livello
+    const lvl = Math.floor(xp / 100) + 1;
+    document.getElementById('user-rank').textContent = lvl;
+}
+
+// --- FUNZIONE HINT ---
+function showHint() {
+    const answer = currentCard.a;
+    // Mostra un pezzo in più della parola ogni volta
+    hintIndex++;
+    
+    // Esempio: "Katze" -> hint 1: "K....", hint 2: "Ka..."
+    const revealed = answer.substring(0, hintIndex);
+    const hidden = answer.substring(hintIndex).replace(/./g, '.'); // Sostituisce il resto con punti
+    
+    // Mettiamolo nel placeholder così l'utente ci scrive sopra
+    document.getElementById('answer-input').placeholder = revealed + hidden;
+    
+    // Feedback visivo che stai barando
+    document.getElementById('feedback').textContent = "👀 Hint usato...";
+    document.getElementById('feedback').className = 'sub-label';
+}
+
+// --- TAB KEY LISTENER ---
+document.getElementById('answer-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+        e.preventDefault(); // Non cambiare focus
+        showHint();
+    }
+});
