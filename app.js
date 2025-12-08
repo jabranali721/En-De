@@ -11,7 +11,12 @@ let isDictationMode = false;
 let isQuizMode = false;
 let isStoryMode = false; // Flag per modalità storia
 let storyIndex = 0; // Indice per avanzare sequenzialmente nelle storie
-let storyVariables = {}; // Memoria per le variabili dinamiche {nome: "Jabran", citta: "Milano"}
+/**
+ * Memoria per le variabili dinamiche catturate durante la modalità storia.
+ * Struttura: { variableName: "capturedValue" }
+ * Esempio: { nome: "Jabran", citta: "Milano", anni: "25" }
+ */
+let storyVariables = {};
 let currentSpeed = 1.0; // Velocità di default
 
 // Elementi DOM
@@ -21,6 +26,32 @@ const gamePanel = document.getElementById('game-panel');
 const setupPanel = document.getElementById('setup-panel');
 const modulesGrid = document.getElementById('modules-grid');
 const homeBtn = document.getElementById('home-btn');
+
+// --- HELPER FUNCTIONS ---
+/**
+ * Escapes special regex characters in a string
+ * @param {string} str - The string to escape
+ * @returns {string} - The escaped string safe for use in RegExp
+ */
+function escapeRegexSpecialChars(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Substitutes story variables in a text string
+ * @param {string} text - Text containing {variable} placeholders
+ * @param {Object} variables - Object with variable names and values
+ * @returns {string} - Text with variables substituted
+ */
+function substituteStoryVariables(text, variables) {
+    let result = text;
+    Object.keys(variables).forEach(key => {
+        const placeholder = `{${key}}`;
+        const escapedPlaceholder = escapeRegexSpecialChars(placeholder);
+        result = result.replace(new RegExp(escapedPlaceholder, 'gi'), variables[key]);
+    });
+    return result;
+}
 
 // --- 1. CARICAMENTO CARTELLA ---
 folderInput.addEventListener('change', async function(e) {
@@ -242,11 +273,7 @@ function nextCard() {
     // SOSTITUZIONE VARIABILI NEL TESTO DELLA DOMANDA (per Story Mode)
     let displayQuestion = currentCard.q;
     if (isStoryMode) {
-        Object.keys(storyVariables).forEach(key => {
-            const placeholder = `{${key}}`;
-            // Sostituisce tutte le occorrenze (g) ignorando maiuscole/minuscole (i)
-            displayQuestion = displayQuestion.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), storyVariables[key]);
-        });
+        displayQuestion = substituteStoryVariables(currentCard.q, storyVariables);
     }
 
     if (isQuizMode) {
@@ -433,16 +460,17 @@ function checkAnswer() {
             if (!varsToCapture.includes(key)) {
                 // Se questa variabile è già nota e NON stiamo cercando di catturarla ora
                 const placeholder = `{${key}}`;
-                regexTarget = regexTarget.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), storyVariables[key]);
+                const escapedPlaceholder = escapeRegexSpecialChars(placeholder);
+                regexTarget = regexTarget.replace(new RegExp(escapedPlaceholder, 'gi'), storyVariables[key]);
             }
         });
         
         // Trasformiamo la frase target in una Regex
-        // Es: "Ich heiße {nome}" diventa "^Ich heiße (.+)$"
-        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus (.+)$"
-        let regexString = "^" + regexTarget
-            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape caratteri speciali
-            .replace(/\\\{(\w+)\\\}/g, '(.+)')      // Trasforma {var} in cattura (.+)
+        // Es: "Ich heiße {nome}" diventa "^Ich heiße ([^.,!?]+)$"
+        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus ([^.,!?]+)$"
+        // Pattern [^.,!?]+ cattura tutto fino a punteggiatura comune
+        let regexString = "^" + escapeRegexSpecialChars(regexTarget)
+            .replace(/\\\{(\w+)\\\}/g, '([^.,!?]+)') // Trasforma {var} in cattura limitata
             + "$";
         
         const regex = new RegExp(regexString, 'i'); // 'i' per case-insensitive
@@ -455,10 +483,13 @@ function checkAnswer() {
             if (varsToCapture.length > 0 && userMatch.length > 1) {
                 varsToCapture.forEach((varName, index) => {
                     // userMatch[0] è tutta la frase, userMatch[1] è la prima cattura
-                    let capturedValue = userMatch[index + 1];
+                    let capturedValue = userMatch[index + 1].trim();
                     
                     // Capitalizziamo la prima lettera per bellezza (es. jabran -> Jabran)
-                    capturedValue = capturedValue.charAt(0).toUpperCase() + capturedValue.slice(1);
+                    // Safety check: verifica che la stringa non sia vuota
+                    if (capturedValue.length > 0) {
+                        capturedValue = capturedValue.charAt(0).toUpperCase() + capturedValue.slice(1);
+                    }
                     
                     storyVariables[varName] = capturedValue;
                     console.log(`Variabile catturata: ${varName} = ${capturedValue}`);
