@@ -618,21 +618,36 @@ function loadStudyCard() {
     const questionEl = document.getElementById('study-question');
     const answerEl = document.getElementById('study-answer');
     const answerBox = document.getElementById('study-answer-box');
+    const inputEl = document.getElementById('study-input');
 
     // Reset grafica
     questionEl.textContent = card.q;
     answerEl.textContent = card.a;
     answerBox.classList.remove('reveal');
     answerBox.classList.add('hidden-content');
+    
+    // Reset Input
+    inputEl.value = '';
+    inputEl.classList.remove('correct');
+    inputEl.classList.add('hidden');
 }
 
 function revealCard() {
     const answerBox = document.getElementById('study-answer-box');
-    // Se è già rivelato, non fare nulla
-    if (answerBox.classList.contains('reveal')) return;
+    const inputEl = document.getElementById('study-input');
+    
+    // Se è già rivelato, rimetti il focus
+    if (answerBox.classList.contains('reveal')) {
+        inputEl.focus();
+        return;
+    }
 
     answerBox.classList.remove('hidden-content');
     answerBox.classList.add('reveal');
+    
+    // MOSTRA INPUT
+    inputEl.classList.remove('hidden');
+    inputEl.focus();
     
     // Parla in automatico
     speak(APP_STATE.currentList[APP_STATE.studyIndex].a);
@@ -667,6 +682,26 @@ document.addEventListener('keydown', (e) => {
         nextStudyCard();
     } else if (e.code === 'ArrowLeft') {
         prevStudyCard();
+    }
+});
+
+// Active Study Mode: Input Validation
+document.getElementById('study-input').addEventListener('input', function(e) {
+    const userVal = e.target.value.trim();
+    const correctVal = APP_STATE.currentList[APP_STATE.studyIndex].a;
+
+    // Controllo case-insensitive
+    if (userVal.toLowerCase() === correctVal.toLowerCase()) {
+        // EFFETTO SUCCESSO
+        e.target.classList.add('correct');
+        
+        // Passa automaticamente alla prossima dopo 0.5 secondi
+        setTimeout(() => {
+            nextStudyCard();
+        }, 500);
+    } else {
+        // Rimuovi la classe correct se presente
+        e.target.classList.remove('correct');
     }
 });
 
