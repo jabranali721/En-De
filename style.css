@@ -109,6 +109,39 @@ input[type="file"] { display: none; }
 /* Placeholder fake per quando è vuoto (opzionale) */
 #answer-input::placeholder { color: #444; opacity: 0.5; }
 
+/* German Keyboard Buttons */
+.german-keyboard {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 15px;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+.german-keyboard:hover { opacity: 1; }
+
+.german-char-btn {
+    background: #444;
+    border: 1px solid var(--sub-color);
+    color: var(--text-color);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 40px;
+}
+.german-char-btn:hover {
+    background: var(--main-color);
+    color: var(--bg-color);
+    border-color: var(--main-color);
+    transform: translateY(-2px);
+}
+.german-char-btn:active {
+    transform: translateY(0);
+}
+
 /* Feedback */
 #feedback {
     margin-top: 20px;
