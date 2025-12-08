@@ -1,10 +1,11 @@
-Bello;Schön
-Grande;Groß
-Piccolo;Klein
-Nuovo;Neu
-Vecchio;Alt
-Buono;Gut
-Cattivo;Schlecht
-Caro (costoso);Teuer
-Facile;Einfach
-Difficile;Schwer
+!THEORY;La magia degli Aggettivi ✨:|Se l'aggettivo è DOPO il verbo "essere", NON cambia mai!|🇮🇹 La casa è bellA, Il cane è bellO.|🇩🇪 Das Haus ist schön, Der Hund ist schön.|(Niente desinenze complicate qui!)
+Bello;Schön;Significa anche 'già' in certi contesti (schon)
+Grande;Groß;Si usa anche per l'altezza delle persone
+Piccolo;Klein;Opposto di Groß
+Nuovo;Neu;Opposto di Alt
+Vecchio;Alt;Si usa anche per l'età (Wie alt bist du?)
+Buono;Gut;Si usa anche per 'bene' (Mir geht es gut)
+Cattivo;Schlecht;Si usa anche per il cibo andato a male
+Caro (costoso);Teuer;Opposto di Billig
+Facile;Einfach;Significa anche 'semplice'
+Difficile;Schwer;Significa letteralmente 'pesante'
