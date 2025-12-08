@@ -1,23 +1,24 @@
-L'appartamento;Die Wohnung
-La stanza;Das Zimmer
-Il soggiorno;Das Wohnzimmer
-Il tavolo;Der Tisch
-La sedia;Der Stuhl
-Il letto;Das Bett
-L'armadio;Der Schrank
-Il divano;Das Sofa
-La lampada;Die Lampe
-La finestra;Das Fenster
-La porta;Die Tür
-Il frigorifero;Der Kühlschrank
-La lavatrice;Die Waschmaschine
-Il balcone;Der Balkon
-Il giardino;Der Garten
-La chiave;Der Schlüssel
-A casa (stato in luogo);Zu Hause
-Vado a casa (moto a luogo);Ich gehe nach Hause
-Abito a Berlino;Ich wohne in Berlin
-La porta è aperta;Die Tür ist offen
-La finestra è chiusa;Das Fenster ist zu
-L'affitto;Die Miete
-Grande e luminoso;Groß und hell
+!THEORY;In casa molti oggetti grandi sono Maschili (Tisch, Schrank), ma le stanze sono spesso Neutre (Zimmer, Bad).|Attenzione a 'Die Tür' (La porta) che è femminile!
+L'appartamento;Die Wohnung;Femminile (termina in -ung)
+La stanza;Das Zimmer;Neutro
+Il soggiorno;Das Wohnzimmer;Neutro (prende il genere dell'ultima parola 'Zimmer')
+Il tavolo;Der Tisch;Maschile
+La sedia;Der Stuhl;Maschile
+Il letto;Das Bett;Neutro
+L'armadio;Der Schrank;Maschile
+Il divano;Das Sofa;Neutro
+La lampada;Die Lampe;Femminile
+La finestra;Das Fenster;Neutro
+La porta;Die Tür;Femminile
+Il frigorifero;Der Kühlschrank;Maschile (Der Schrank)
+La lavatrice;Die Waschmaschine;Femminile (Die Maschine)
+Il balcone;Der Balkon;Maschile
+Il giardino;Der Garten;Maschile
+La chiave;Der Schlüssel;Maschile
+A casa (stato in luogo);Zu Hause;Eccezione fissa
+Vado a casa (moto a luogo);Ich gehe nach Hause;Usa 'nach' per andare a casa
+Abito a Berlino;Ich wohne in Berlin;Stato in luogo con città
+La porta è aperta;Die Tür ist offen;Aggettivo
+La finestra è chiusa;Das Fenster ist zu;'Zu' qui significa chiuso
+L'affitto;Die Miete;Femminile
+Grande e luminoso;Groß und hell;Aggettivi

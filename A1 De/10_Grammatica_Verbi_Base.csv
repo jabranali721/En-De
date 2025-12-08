@@ -1,27 +1,28 @@
-Essere (infinito);Sein
-Avere (infinito);Haben
-Io sono;Ich bin
-Tu sei;Du bist
-Noi siamo;Wir sind
-Io ho;Ich habe
-Tu hai;Du hast
-Potere (verbo modale);Können
-Volere (verbo modale);Wollen
-Dovere (verbo modale);Müssen
-Parlare;Sprechen
-Vedere;Sehen
-Mangiare;Essen
-Dormire;Schlafen
-Prendere;Nehmen
-Chi?;Wer?
-Cosa?;Was?
-Dove? (stato);Wo?
-Dove? (moto);Wohin?
-Quando?;Wann?
-Perché?;Warum?
-Come?;Wie?
-Quanto costa?;Wie viel kostet das?
-E (congiunzione);Und
-Ma (congiunzione);Aber
-O (congiunzione);Oder
-Non (negazione);Nicht
+!THEORY;Coniugazione Verbi Regolari (Presente):|Ich ...-e (Io)|Du ...-st (Tu)|Er/Sie/Es ...-t (Lui/Lei)|Wir ...-en (Noi)|Ihr ...-t (Voi)|Sie ...-en (Loro/Lei cortesia)
+Essere (infinito);Sein;Verbo irregolare per eccellenza
+Avere (infinito);Haben;Ausiliare importante
+Io sono;Ich bin;Irregolare
+Tu sei;Du bist;Irregolare
+Noi siamo;Wir sind;Irregolare
+Io ho;Ich habe;Regolare
+Tu hai;Du hast;Perde la 'b' (irregolare)
+Potere (verbo modale);Können;Esprime capacità/possibilità
+Volere (verbo modale);Wollen;Esprime volontà forte
+Dovere (verbo modale);Müssen;Esprime obbligo/necessità
+Parlare;Sprechen;Cambia la vocale (Ich spreche, Du sprichst)
+Vedere;Sehen;Cambia la vocale (Ich sehe, Du siehst)
+Mangiare;Essen;Cambia la vocale (Ich esse, Du isst)
+Dormire;Schlafen;Prende l'umlaut (Du schläfst)
+Prendere;Nehmen;Irregolare (Du nimmst)
+Chi?;Wer?;Pronome interrogativo
+Cosa?;Was?;Pronome interrogativo
+Dove? (stato);Wo?;Stato in luogo
+Dove? (moto);Wohin?;Moto a luogo (verso dove?)
+Quando?;Wann?;Temporale
+Perché?;Warum?;Causale
+Come?;Wie?;Modale
+Quanto costa?;Wie viel kostet das?;Espressione fissa
+E (congiunzione);Und;Collega frasi
+Ma (congiunzione);Aber;Avversativa
+O (congiunzione);Oder;Alternativa
+Non (negazione);Nicht;Negazione standard

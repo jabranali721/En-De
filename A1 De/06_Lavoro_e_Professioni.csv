@@ -1,21 +1,22 @@
-Il lavoro;Die Arbeit
-La professione;Der Beruf
-L'ufficio;Das Büro
-Il computer;Der Computer
-Lo studente (università);Der Student
-Lo scolaro (scuola);Der Schüler
-L'insegnante (uomo);Der Lehrer
-L'insegnante (donna);Die Lehrerin
-Il medico;Der Arzt
-L'impiegato;Der Angestellte
-Il cameriere;Der Kellner
-La pausa;Die Pause
-I colleghi;Die Kollegen
-La ditta / L'azienda;Die Firma
-Cosa fai di lavoro?;Was bist du von Beruf?
-Lavoro come medico;Ich arbeite als Arzt
-Sono disoccupato;Ich bin arbeitslos
-Studio all'università;Ich studiere an der Universität
-Vado al lavoro;Ich gehe zur Arbeit
-Scrivere una email;Eine E-Mail schreiben
-Il capo;Der Chef
+!THEORY;Regola d'oro per le professioni:|Per trasformare un lavoro da uomo a donna, aggiungi quasi sempre "-in".|Esempio: Der Lehrer (Maestro) -> Die Lehrerin (Maestra).
+Il lavoro;Die Arbeit;Femminile
+La professione;Der Beruf;Maschile
+L'ufficio;Das Büro;Neutro (prestito dal francese)
+Il computer;Der Computer;Maschile
+Lo studente (università);Der Student;Maschile
+Lo scolaro (scuola);Der Schüler;Maschile
+L'insegnante (uomo);Der Lehrer;Maschile
+L'insegnante (donna);Die Lehrerin;Femminile (suffisso -in)
+Il medico;Der Arzt;Maschile
+L'impiegato;Der Angestellte;Sostantivato
+Il cameriere;Der Kellner;Maschile
+La pausa;Die Pause;Femminile
+I colleghi;Die Kollegen;Plurale
+La ditta / L'azienda;Die Firma;Femminile
+Cosa fai di lavoro?;Was bist du von Beruf?;Domanda standard
+Lavoro come medico;Ich arbeite als Arzt;'Als' significa 'come' in questo ruolo
+Sono disoccupato;Ich bin arbeitslos;Senza lavoro (-los)
+Studio all'università;Ich studiere an der Universität;Studiare (università)
+Vado al lavoro;Ich gehe zur Arbeit;Moto a luogo
+Scrivere una email;Eine E-Mail schreiben;Verbo alla fine
+Il capo;Der Chef;Maschile

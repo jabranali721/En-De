@@ -1,25 +1,26 @@
-La famiglia;Die Familie
-I genitori;Die Eltern
-Il padre;Der Vater
-La madre;Die Mutter
-Il fratello;Der Bruder
-La sorella;Die Schwester
-I fratelli (in generale);Die Geschwister
-Il figlio;Der Sohn
-La figlia;Die Tochter
-Il nonno;Der Opa
-La nonna;Die Oma
-I nonni;Die Großeltern
-Lo zio;Der Onkel
-La zia;Die Tante
-Il marito;Der Mann
-La moglie;Die Frau
-L'amico;Der Freund
-L'amica;Die Freundin
-Il vicino di casa;Der Nachbar
-Il bambino;Das Kind
-Sono sposato;Ich bin verheiratet
-Sono single;Ich bin ledig
-Ho due figli;Ich habe zwei Kinder
-Questo è mio padre;Das ist mein Vater
-Questa è mia madre;Das ist meine Mutter
+!THEORY;In tedesco i generi sono fondamentali: |👨 Der = Maschile (Padre, Fratello)|👩 Die = Femminile (Madre, Sorella)|👶 Das = Neutro (Bambino).|Nota: Il plurale è quasi sempre 'Die'.
+La famiglia;Die Familie;Femminile (termina in -e)
+I genitori;Die Eltern;Solo plurale
+Il padre;Der Vater;Maschile
+La madre;Die Mutter;Femminile
+Il fratello;Der Bruder;Maschile
+La sorella;Die Schwester;Femminile
+I fratelli (in generale);Die Geschwister;Plurale (Fratelli e Sorelle insieme)
+Il figlio;Der Sohn;Maschile
+La figlia;Die Tochter;Femminile
+Il nonno;Der Opa;Informale (Nonnino)
+La nonna;Die Oma;Informale (Nonnina)
+I nonni;Die Großeltern;Plurale
+Lo zio;Der Onkel;Maschile
+La zia;Die Tante;Femminile
+Il marito;Der Mann;Significa anche 'Uomo'
+La moglie;Die Frau;Significa anche 'Donna'
+L'amico;Der Freund;Maschile
+L'amica;Die Freundin;Femminile (suffisso -in)
+Il vicino di casa;Der Nachbar;Maschile
+Il bambino;Das Kind;Neutro (tutti i bambini sono neutri)
+Sono sposato;Ich bin verheiratet;Aggettivo
+Sono single;Ich bin ledig;Aggettivo
+Ho due figli;Ich habe zwei Kinder;Plurale di Kind
+Questo è mio padre;Das ist mein Vater;Nominativo
+Questa è mia madre;Das ist meine Mutter;Nominativo
