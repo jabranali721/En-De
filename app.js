@@ -16,7 +16,8 @@ const APP_STATE = {
     hintIndex: 0,          // Indice per hint
     sessionCorrect: 0,
     sessionGoal: 10,
-    speed: 1.0
+    speed: 1.0,
+    isAnswerRevealed: false // Flag per tracciare se la risposta è stata rivelata in study mode
 };
 
 // --- ELEMENTI DOM (Cache) ---
@@ -807,6 +808,9 @@ function loadStudyCard() {
     inputEl.value = '';
     inputEl.classList.remove('correct');
     inputEl.classList.add('hidden');
+    
+    // Reset flag rivelamento - abilita nuovamente il tasto Spazio
+    APP_STATE.isAnswerRevealed = false;
 }
 
 function revealCard() {
@@ -825,6 +829,9 @@ function revealCard() {
     // MOSTRA INPUT
     inputEl.classList.remove('hidden');
     inputEl.focus();
+    
+    // Disabilita il tasto Spazio dopo il primo reveal
+    APP_STATE.isAnswerRevealed = true;
     
     // Parla in automatico
     speak(APP_STATE.currentList[APP_STATE.studyIndex].a);
@@ -853,8 +860,11 @@ document.addEventListener('keydown', (e) => {
     if (APP_STATE.currentMode !== 'STUDY') return; // Se stiamo giocando, ignora questi comandi
 
     if (e.code === 'Space') {
-        e.preventDefault(); // Evita scroll pagina
-        revealCard();
+        // Solo se la risposta NON è ancora rivelata, attiva il reveal
+        if (!APP_STATE.isAnswerRevealed) {
+            e.preventDefault(); // Evita scroll pagina
+            revealCard();
+        }
     } else if (e.code === 'ArrowRight') {
         nextStudyCard();
     } else if (e.code === 'ArrowLeft') {
