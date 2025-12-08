@@ -242,8 +242,8 @@ function showDashboard() {
         if (mod.type === 'STORY') icon = '📜';
         
         // Rimuovi underscore e prefissi numerici dal nome visualizzato per pulizia
-        // Es: "05_Casa_e_Mobili" diventa "Casa e Mobili"
-        const cleanName = mod.name.replace(/^\d+_/, '').replace(/_/g, ' ');
+        // Es: "05 Casa e Mobili" diventa "Casa e Mobili"
+        const cleanName = mod.name.replace(/^\d+[\s_]/, '').replace(/_/g, ' ');
 
         btnMain.innerHTML = `<span>${icon} ${cleanName}</span> <span style="font-size:0.8em; opacity:0.6">${mod.data.length} parole</span>`;
         
