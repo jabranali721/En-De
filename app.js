@@ -520,7 +520,7 @@ function handleErrorLogic() {
     
     setTimeout(() => {
         // Se l'utente non ha cliccato override, vai avanti
-        if (DOM.game.feedback.className === 'error') nextCard();
+        if (DOM.game.feedback.classList.contains('error')) nextCard();
     }, 4000); // 4 secondi per leggere l'errore
 }
 
