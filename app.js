@@ -344,6 +344,28 @@ document.getElementById('answer-input').addEventListener('keydown', function(e) 
     }
 });
 
+// --- GERMAN KEYBOARD FUNCTION ---
+function insertChar(char) {
+    // Input validation
+    if (!char || typeof char !== 'string') return;
+    
+    const input = document.getElementById('answer-input');
+    if (!input) return;
+    
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    const text = input.value;
+    
+    // Insert character at cursor position
+    input.value = text.substring(0, start) + char + text.substring(end);
+    
+    // Move cursor after inserted character
+    input.selectionStart = input.selectionEnd = start + char.length;
+    
+    // Keep focus on input
+    input.focus();
+}
+
 // --- DICTATION MODE FUNCTIONS ---
 
 function startDictation(moduleName) {
