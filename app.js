@@ -466,11 +466,11 @@ function checkAnswer() {
         });
         
         // Trasformiamo la frase target in una Regex
-        // Es: "Ich heiße {nome}" diventa "^Ich heiße ([^.,!?]+)$"
-        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus ([^.,!?]+)$"
-        // Pattern [^.,!?]+ cattura tutto fino a punteggiatura comune
+        // Es: "Ich heiße {nome}" diventa "^Ich heiße ([\\w\\s'-]+)$"
+        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus ([\\w\\s'-]+)$"
+        // Pattern [\w\s'-]+ cattura parole, spazi, apostrofi e trattini (per nomi composti come "Jean-Pierre")
         let regexString = "^" + escapeRegexSpecialChars(regexTarget)
-            .replace(/\\\{(\w+)\\\}/g, '([^.,!?]+)') // Trasforma {var} in cattura limitata
+            .replace(/\\\{(\w+)\\\}/g, '([\\w\\s\'-]+)') // Trasforma {var} in cattura che include nomi composti
             + "$";
         
         const regex = new RegExp(regexString, 'i'); // 'i' per case-insensitive
@@ -485,9 +485,9 @@ function checkAnswer() {
                     // userMatch[0] è tutta la frase, userMatch[1] è la prima cattura
                     let capturedValue = userMatch[index + 1].trim();
                     
-                    // Capitalizziamo la prima lettera per bellezza (es. jabran -> Jabran)
-                    // Safety check: verifica che la stringa non sia vuota
-                    if (capturedValue.length > 0) {
+                    // Capitalizziamo solo se sembra un nome (non numeri)
+                    // Safety check: verifica che la stringa non sia vuota e non sia solo numeri
+                    if (capturedValue.length > 0 && !/^\d+$/.test(capturedValue)) {
                         capturedValue = capturedValue.charAt(0).toUpperCase() + capturedValue.slice(1);
                     }
                     
@@ -531,7 +531,12 @@ function checkAnswer() {
             setTimeout(() => input.classList.remove('shake'), 300);
             
             // Se c'è una variabile, mostriamo all'utente cosa ci aspettavamo come struttura
-            let hintMsg = targetAnswer.replace(/\{(\w+)\}/g, '[Tuo Nome/Città/Età...]');
+            // Genera hint dinamico basato sui nomi delle variabili
+            let hintMsg = targetAnswer.replace(/\{(\w+)\}/g, (match, varName) => {
+                // Capitalizza il nome della variabile per il hint
+                const capitalizedVar = varName.charAt(0).toUpperCase() + varName.slice(1);
+                return `[${capitalizedVar}]`;
+            });
             
             let msg = `❌ Riprova. Struttura attesa: <b>${hintMsg}</b>`;
             const escapedAnswer = targetAnswer.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
