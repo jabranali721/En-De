@@ -29,7 +29,8 @@ const homeBtn = document.getElementById('home-btn');
 
 // --- CONSTANTS ---
 // Regex pattern per catturare variabili: supporta parole, spazi, apostrofi e trattini
-const VARIABLE_CAPTURE_PATTERN = '([\\w\\s\'-]+)';
+// Limitato a 50 caratteri per prevenire problemi di performance e ReDoS
+const VARIABLE_CAPTURE_PATTERN = '([\\w\\s\'-]{1,50})';
 
 // --- HELPER FUNCTIONS ---
 /**
@@ -55,6 +56,18 @@ function substituteStoryVariables(text, variables) {
         result = result.replace(new RegExp(escapedPlaceholder, 'gi'), variables[key]);
     });
     return result;
+}
+
+/**
+ * Builds a regex pattern for capturing variables in story mode
+ * @param {string} targetString - The target answer string with {variable} placeholders
+ * @returns {RegExp} - Compiled regex for matching user input
+ */
+function buildVariableCaptureRegex(targetString) {
+    const regexString = "^" + escapeRegexSpecialChars(targetString)
+        .replace(/\\\{(\w+)\\\}/g, VARIABLE_CAPTURE_PATTERN)
+        + "$";
+    return new RegExp(regexString, 'i');
 }
 
 // --- 1. CARICAMENTO CARTELLA ---
@@ -472,14 +485,9 @@ function checkAnswer() {
             }
         });
         
-        // Trasformiamo la frase target in una Regex
-        // Es: "Ich heiße {nome}" diventa "^Ich heiße ([\\w\\s'-]+)$"
-        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus ([\\w\\s'-]+)$"
-        let regexString = "^" + escapeRegexSpecialChars(regexTarget)
-            .replace(/\\\{(\w+)\\\}/g, VARIABLE_CAPTURE_PATTERN) // Trasforma {var} in cattura
-            + "$";
-        
-        const regex = new RegExp(regexString, 'i'); // 'i' per case-insensitive
+        // Costruiamo una regex per catturare le variabili
+        // Es: "Ich heiße {nome}" diventa "^Ich heiße ([\\w\\s'-]{1,50})$"
+        const regex = buildVariableCaptureRegex(regexTarget);
         const userMatch = userVal.match(regex);
 
         if (userMatch) {
@@ -496,6 +504,7 @@ function checkAnswer() {
                     if (capturedValue.length > 0 && !/^\d+$/.test(capturedValue)) {
                         capturedValue = capturedValue
                             .split(' ')
+                            .filter(word => word.length > 0) // Rimuovi stringhe vuote da spazi multipli
                             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                             .join(' ');
                     }
