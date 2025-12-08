@@ -9,6 +9,9 @@ let studyIndex = 0;
 let isStudyMode = false;
 let isDictationMode = false;
 let isQuizMode = false;
+let isStoryMode = false; // Flag per modalità storia
+let storyIndex = 0; // Indice per avanzare sequenzialmente nelle storie
+let storyVariables = {}; // Memoria per le variabili dinamiche {nome: "Jabran", citta: "Milano"}
 let currentSpeed = 1.0; // Velocità di default
 
 // Elementi DOM
@@ -95,6 +98,8 @@ function showDashboard() {
     isDictationMode = false;
     isStudyMode = false;
     isQuizMode = false;
+    isStoryMode = false;
+    storyIndex = 0;
     
     // Nascondi XP bar e ripristina titolo
     document.getElementById('xp-bar-container').classList.add('hidden');
@@ -149,6 +154,14 @@ function startGame(moduleName) {
     isDictationMode = false;
     isStudyMode = false;
     isQuizMode = false;
+    
+    // Reset variabili quando inizi una nuova storia
+    storyVariables = {};
+    
+    // Se il file inizia con STORY, attiviamo la modalità storia
+    isStoryMode = moduleName.startsWith("STORY");
+    storyIndex = 0; // Reset indice storia
+    
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
     
@@ -199,25 +212,46 @@ function nextCard() {
     hintIndex = 0;
     input.placeholder = '';
     
-    // Algoritmo: Fisher-Yates shuffle per randomizzazione corretta
-    const shuffled = [...currentList];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    // Gestione modalità Storia: ordine sequenziale
+    if (isStoryMode) {
+        if (storyIndex >= currentList.length) {
+            alert("Storia finita! Ottimo lavoro.");
+            showDashboard();
+            return;
+        }
+        currentCard = currentList[storyIndex];
+        storyIndex++; // Prepara per la prossima
+    } else {
+        // Modalità normale: algoritmo Fisher-Yates shuffle per randomizzazione corretta
+        const shuffled = [...currentList];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        currentCard = shuffled.find(card => {
+            const stat = userStats[card.q];
+            // Se non esiste stat o livello < 3, ha priorità
+            return !stat || stat.level < 3;
+        }) || shuffled[0]; // Altrimenti prendine una a caso
     }
-    
-    currentCard = shuffled.find(card => {
-        const stat = userStats[card.q];
-        // Se non esiste stat o livello < 3, ha priorità
-        return !stat || stat.level < 3;
-    }) || shuffled[0]; // Altrimenti prendine una a caso
 
     const questionText = document.getElementById('question-text');
     const quizButtons = document.getElementById('quiz-buttons');
 
+    // SOSTITUZIONE VARIABILI NEL TESTO DELLA DOMANDA (per Story Mode)
+    let displayQuestion = currentCard.q;
+    if (isStoryMode) {
+        Object.keys(storyVariables).forEach(key => {
+            const placeholder = `{${key}}`;
+            // Sostituisce tutte le occorrenze (g) ignorando maiuscole/minuscole (i)
+            displayQuestion = displayQuestion.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), storyVariables[key]);
+        });
+    }
+
     if (isQuizMode) {
         // --- QUIZ MODE ---
-        questionText.textContent = currentCard.q; // Show question with blank
+        questionText.textContent = displayQuestion; // Show question with blank
         questionText.style.color = "var(--text-color)";
         questionText.style.opacity = "1";
         
@@ -245,7 +279,7 @@ function nextCard() {
         
     } else {
         // --- MODALITÀ CLASSICA ---
-        questionText.textContent = currentCard.q; // Mostra Italiano
+        questionText.textContent = displayQuestion; // Mostra Italiano (con variabili sostituite)
         questionText.style.color = "var(--sub-color)";
         questionText.style.opacity = "1";
         
@@ -372,88 +406,208 @@ document.getElementById('answer-input').addEventListener('keypress', (e) => {
 function checkAnswer() {
     const input = document.getElementById('answer-input');
     const feedback = document.getElementById('feedback');
-    const userVal = input.value.trim().toLowerCase();
-    const correctVal = currentCard.a.trim().toLowerCase();
-
+    const userVal = input.value.trim(); // Manteniamo le maiuscole per i nomi propri in Story Mode!
+    
+    // Preparazione della risposta attesa
+    let targetAnswer = currentCard.a;
+    
     // Aggiorna tentativi
     if (!userStats[currentCard.q]) userStats[currentCard.q] = { level: 0, tries: 0 };
     userStats[currentCard.q].tries++;
 
-    if (userVal === correctVal) {
-        // --- CASO CORRETTO ---
-        let msg = `✅ Esatto!`;
+    // Logica speciale per Story Mode con variabili
+    if (isStoryMode && targetAnswer.includes('{')) {
+        // CREAZIONE REGEX DINAMICA per catturare variabili
+        const variablePattern = /\{(\w+)\}/g;
+        let varsToCapture = [];
         
-        // Se eravamo in dettato, mostriamo ora la traduzione italiana
-        if (isDictationMode) {
-            msg += ` <span style="color:#aaa; font-size:0.8em">(${currentCard.q})</span>`;
+        // Troviamo tutte le variabili da catturare in questa frase
+        let match;
+        while ((match = variablePattern.exec(targetAnswer)) !== null) {
+            varsToCapture.push(match[1]); // Salva il nome della variabile (es. "nome")
         }
         
-        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
-        feedback.innerHTML = msg;
-        feedback.className = 'success';
+        // Prima sostituiamo le variabili già note
+        let regexTarget = targetAnswer;
+        Object.keys(storyVariables).forEach(key => {
+            if (!varsToCapture.includes(key)) {
+                // Se questa variabile è già nota e NON stiamo cercando di catturarla ora
+                const placeholder = `{${key}}`;
+                regexTarget = regexTarget.replace(new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), storyVariables[key]);
+            }
+        });
         
-        // Flash verde
-        input.classList.add('flash-correct');
-        setTimeout(() => input.classList.remove('flash-correct'), 500);
+        // Trasformiamo la frase target in una Regex
+        // Es: "Ich heiße {nome}" diventa "^Ich heiße (.+)$"
+        // Es: "Ich komme aus {citta}" diventa "^Ich komme aus (.+)$"
+        let regexString = "^" + regexTarget
+            .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape caratteri speciali
+            .replace(/\\\{(\w+)\\\}/g, '(.+)')      // Trasforma {var} in cattura (.+)
+            + "$";
         
-        // Aumenta livello (max 5)
-        if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
-        
-        // XP System
-        let currentXP = parseInt(localStorage.getItem('deutschXP') || '0');
-        currentXP += 10; // 10 XP per parola
-        localStorage.setItem('deutschXP', currentXP);
-        
-        sessionCorrectCount++;
-        updateProgressBar();
-        updateRank(currentXP);
-        
-        // Parla in automatico quando indovini
-        speak(currentCard.a);
-        
-        saveAndNext();
+        const regex = new RegExp(regexString, 'i'); // 'i' per case-insensitive
+        const userMatch = userVal.match(regex);
+
+        if (userMatch) {
+            // --- RISPOSTA CORRETTA CON VARIABILI ---
+            
+            // SALVATAGGIO VARIABILI
+            if (varsToCapture.length > 0 && userMatch.length > 1) {
+                varsToCapture.forEach((varName, index) => {
+                    // userMatch[0] è tutta la frase, userMatch[1] è la prima cattura
+                    let capturedValue = userMatch[index + 1];
+                    
+                    // Capitalizziamo la prima lettera per bellezza (es. jabran -> Jabran)
+                    capturedValue = capturedValue.charAt(0).toUpperCase() + capturedValue.slice(1);
+                    
+                    storyVariables[varName] = capturedValue;
+                    console.log(`Variabile catturata: ${varName} = ${capturedValue}`);
+                });
+            }
+
+            // Feedback positivo
+            let msg = `✅ Esatto!`;
+            const escapedAnswer = userVal.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+            feedback.innerHTML = msg;
+            feedback.className = 'success';
+            
+            // Flash verde
+            input.classList.add('flash-correct');
+            setTimeout(() => input.classList.remove('flash-correct'), 500);
+            
+            // Aumenta livello (max 5)
+            if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
+            
+            // XP System
+            let currentXP = parseInt(localStorage.getItem('deutschXP') || '0');
+            currentXP += 10; // 10 XP per parola
+            localStorage.setItem('deutschXP', currentXP);
+            
+            sessionCorrectCount++;
+            updateProgressBar();
+            updateRank(currentXP);
+            
+            // Parla quello che ha scritto l'utente (col suo nome!)
+            speak(userVal);
+            
+            saveAndNext();
+
+        } else {
+            // --- RISPOSTA SBAGLIATA IN STORY MODE ---
+            // Shake animation
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 300);
+            
+            // Se c'è una variabile, mostriamo all'utente cosa ci aspettavamo come struttura
+            let hintMsg = targetAnswer.replace(/\{(\w+)\}/g, '[Tuo Nome/Città/Età...]');
+            
+            let msg = `❌ Riprova. Struttura attesa: <b>${hintMsg}</b>`;
+            const escapedAnswer = targetAnswer.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
+                <br>
+                <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
+            
+            feedback.innerHTML = msg;
+            feedback.className = 'error';
+            
+            // Penalità temporanea
+            const oldLevel = userStats[currentCard.q].level;
+            userStats[currentCard.q].level = 0; 
+            localStorage.setItem('deutschStats', JSON.stringify(userStats));
+
+            // Gestione Click su "I was right"
+            document.getElementById('override-btn').onclick = function() {
+                userStats[currentCard.q].level = oldLevel < 5 ? oldLevel + 1 : 5;
+                feedback.innerHTML = `✅ Corretto manualmente!`;
+                feedback.className = 'success';
+                saveAndNext();
+            };
+
+            window.tempTimeout = setTimeout(nextCard, 3000);
+        }
         
     } else {
-        // --- CASO SBAGLIATO ---
-        // Shake animation
-        input.classList.add('shake');
-        setTimeout(() => input.classList.remove('shake'), 300);
-        
-        // Mostriamo errore MA con opzione di "Recupero"
-        let msg = `❌ No! Era: <b>${currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</b>`;
-        
-        if (isDictationMode) {
-             msg += ` <br><span style="color:#aaa">Traduzione: ${currentCard.q}</span>`;
-        }
-        
-        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
-            <br>
-            <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
-        
-        feedback.innerHTML = msg;
-        feedback.className = 'error';
-        
-        // Parla anche se sbagli, così impari la pronuncia
-        speak(currentCard.a);
+        // Modalità normale (non Story Mode)
+        const userValLower = userVal.toLowerCase();
+        const correctVal = targetAnswer.trim().toLowerCase();
 
-        // Penalità temporanea (verrà salvata solo se non clicchi override)
-        const oldLevel = userStats[currentCard.q].level; // Salviamo il livello vecchio per sicurezza
-        userStats[currentCard.q].level = 0; 
-        localStorage.setItem('deutschStats', JSON.stringify(userStats));
-
-        // Gestione Click su "I was right"
-        document.getElementById('override-btn').onclick = function() {
-            // Ripristina e aumenta come se fosse giusto
-            userStats[currentCard.q].level = oldLevel < 5 ? oldLevel + 1 : 5;
-            feedback.innerHTML = `✅ Corretto manualmente!`;
+        if (userValLower === correctVal) {
+            // --- CASO CORRETTO ---
+            let msg = `✅ Esatto!`;
+            
+            // Se eravamo in dettato, mostriamo ora la traduzione italiana
+            if (isDictationMode) {
+                msg += ` <span style="color:#aaa; font-size:0.8em">(${currentCard.q})</span>`;
+            }
+            
+            const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+            feedback.innerHTML = msg;
             feedback.className = 'success';
+            
+            // Flash verde
+            input.classList.add('flash-correct');
+            setTimeout(() => input.classList.remove('flash-correct'), 500);
+            
+            // Aumenta livello (max 5)
+            if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
+            
+            // XP System
+            let currentXP = parseInt(localStorage.getItem('deutschXP') || '0');
+            currentXP += 10; // 10 XP per parola
+            localStorage.setItem('deutschXP', currentXP);
+            
+            sessionCorrectCount++;
+            updateProgressBar();
+            updateRank(currentXP);
+            
+            // Parla in automatico quando indovini
+            speak(currentCard.a);
+            
             saveAndNext();
-        };
+            
+        } else {
+            // --- CASO SBAGLIATO ---
+            // Shake animation
+            input.classList.add('shake');
+            setTimeout(() => input.classList.remove('shake'), 300);
+            
+            // Mostriamo errore MA con opzione di "Recupero"
+            let msg = `❌ No! Era: <b>${currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</b>`;
+            
+            if (isDictationMode) {
+                 msg += ` <br><span style="color:#aaa">Traduzione: ${currentCard.q}</span>`;
+            }
+            
+            const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
+                <br>
+                <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
+            
+            feedback.innerHTML = msg;
+            feedback.className = 'error';
+            
+            // Parla anche se sbagli, così impari la pronuncia
+            speak(currentCard.a);
 
-        // Se l'utente NON clicca override, andiamo avanti tra 3 secondi (più tempo per leggere l'errore)
-        window.tempTimeout = setTimeout(nextCard, 3000);
+            // Penalità temporanea (verrà salvata solo se non clicchi override)
+            const oldLevel = userStats[currentCard.q].level; // Salviamo il livello vecchio per sicurezza
+            userStats[currentCard.q].level = 0; 
+            localStorage.setItem('deutschStats', JSON.stringify(userStats));
+
+            // Gestione Click su "I was right"
+            document.getElementById('override-btn').onclick = function() {
+                // Ripristina e aumenta come se fosse giusto
+                userStats[currentCard.q].level = oldLevel < 5 ? oldLevel + 1 : 5;
+                feedback.innerHTML = `✅ Corretto manualmente!`;
+                feedback.className = 'success';
+                saveAndNext();
+            };
+
+            // Se l'utente NON clicca override, andiamo avanti tra 3 secondi (più tempo per leggere l'errore)
+            window.tempTimeout = setTimeout(nextCard, 3000);
+        }
     }
 }
 

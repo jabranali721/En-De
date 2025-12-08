@@ -1,0 +1,8 @@
+[Sconosciuto] Ciao, io sono Hans. E tu come ti chiami?;Hallo, ich heiße {nome}
+[Hans] Piacere, {nome}! Di dove sei?;Freut mich, {nome}! Woher kommst du?
+[Tu] Vengo da... (es. Roma);Ich komme aus {citta}
+[Hans] Ah, {citta} è una bella città! E quanti anni hai?;Ah, {citta} ist eine schöne Stadt! Wie alt bist du?
+[Tu] Ho ... anni.;Ich bin {anni} Jahre alt
+[Hans] Wow, {anni} anni? Sei giovane!;Wow, {anni} Jahre alt? Du bist jung!
+[Hans] Bene {nome}, ci vediamo dopo!;Gut {nome}, bis später!
+[Tu] Ciao Hans!;Tschüss Hans!
