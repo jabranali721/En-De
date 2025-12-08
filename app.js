@@ -204,7 +204,7 @@ function checkAnswer() {
         let msg = `✅ Esatto!`;
         
         // Se eravamo in dettato, mostriamo ora la traduzione italiana
-        if(isDictationMode) {
+        if (isDictationMode) {
             msg += ` <span style="color:#aaa; font-size:0.8em">(${currentCard.q})</span>`;
         }
         
@@ -243,7 +243,7 @@ function checkAnswer() {
         // Mostriamo errore MA con opzione di "Recupero"
         let msg = `❌ No! Era: <b>${currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</b>`;
         
-        if(isDictationMode) {
+        if (isDictationMode) {
              msg += ` <br><span style="color:#aaa">Traduzione: ${currentCard.q}</span>`;
         }
         
@@ -380,11 +380,11 @@ function setSpeed(rate) {
     });
     
     // Riproduci subito per far sentire la differenza
-    if(currentCard) speak(currentCard.a); 
+    if (currentCard) speak(currentCard.a); 
 }
 
 function replayAudio() {
-    if(currentCard) speak(currentCard.a);
+    if (currentCard) speak(currentCard.a);
     document.getElementById('answer-input').focus();
 }
 
