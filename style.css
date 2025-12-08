@@ -337,3 +337,45 @@ input[type="file"] { display: none; }
     cursor: pointer;
     margin-left: 20px; /* Separate it a bit */
 }
+
+/* QUIZ BUTTONS */
+.quiz-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.quiz-option-btn {
+    background: #2c2e31;
+    border: 2px solid var(--sub-color);
+    color: var(--text-color);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+    padding: 15px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+}
+
+.quiz-option-btn:hover {
+    border-color: var(--main-color);
+    background: #3a3c3f;
+    transform: translateX(5px);
+}
+
+.quiz-option-btn.correct {
+    background: var(--main-color);
+    color: var(--bg-color);
+    border-color: var(--main-color);
+    font-weight: bold;
+}
+
+.quiz-option-btn.incorrect {
+    background: var(--error-color);
+    border-color: var(--error-color);
+    animation: shake 0.3s ease-in-out;
+}

@@ -8,6 +8,7 @@ let hintIndex = 0; // Variabile globale per tracciare quanti aiuti usati
 let studyIndex = 0;
 let isStudyMode = false;
 let isDictationMode = false;
+let isQuizMode = false;
 let currentSpeed = 1.0; // Velocità di default
 
 // Elementi DOM
@@ -61,7 +62,24 @@ function parseCSV(text) {
     return text.split('\n')
         .map(line => {
             const parts = line.split(';');
-            return (parts.length >= 2) ? { q: parts[0].trim(), a: parts[1].trim() } : null;
+            if (parts.length >= 4) {
+                // Quiz format: question; wrong1; wrong2; correct
+                return { 
+                    q: parts[0].trim(), 
+                    a: parts[3].trim(),
+                    wrong1: parts[1].trim(),
+                    wrong2: parts[2].trim(),
+                    isQuiz: true
+                };
+            } else if (parts.length >= 2) {
+                // Normal format: question; answer
+                return { 
+                    q: parts[0].trim(), 
+                    a: parts[1].trim(),
+                    isQuiz: false
+                };
+            }
+            return null;
         })
         .filter(item => item);
 }
@@ -76,6 +94,7 @@ function showDashboard() {
     // Reset mode flags
     isDictationMode = false;
     isStudyMode = false;
+    isQuizMode = false;
     
     // Nascondi XP bar e ripristina titolo
     document.getElementById('xp-bar-container').classList.add('hidden');
@@ -88,30 +107,38 @@ function showDashboard() {
     Object.keys(library).forEach(moduleName => {
         const wrapper = document.createElement('div');
         wrapper.style.marginBottom = "10px";
+        
+        // Check if this module has quiz format
+        const hasQuizFormat = library[moduleName].some(card => card.isQuiz);
 
         // Bottone Modulo (Avvia Gioco)
         const btnPlay = document.createElement('button');
         btnPlay.className = 'module-card';
-        btnPlay.innerHTML = `🎮 PLAY: ${moduleName.toUpperCase()}`;
-        btnPlay.onclick = () => startGame(moduleName);
-
-        // Bottone Studio (Piccolo accanto)
-        const btnStudy = document.createElement('button');
-        btnStudy.className = 'module-card';
-        btnStudy.style.borderLeft = "2px solid #555"; 
-        btnStudy.innerHTML = `📖 STUDY`;
-        btnStudy.onclick = () => startStudy(moduleName);
-
-        // Bottone Dettato (Icona Cuffie)
-        const btnDictation = document.createElement('button');
-        btnDictation.className = 'module-card';
-        btnDictation.style.borderLeft = "2px solid #555"; 
-        btnDictation.innerHTML = `🎧 DICTATION`;
-        btnDictation.onclick = () => startDictation(moduleName);
+        btnPlay.innerHTML = hasQuizFormat ? `🎯 QUIZ: ${moduleName.toUpperCase()}` : `🎮 PLAY: ${moduleName.toUpperCase()}`;
+        btnPlay.onclick = () => hasQuizFormat ? startQuiz(moduleName) : startGame(moduleName);
 
         wrapper.appendChild(btnPlay);
-        wrapper.appendChild(btnStudy);
-        wrapper.appendChild(btnDictation);
+
+        // Only add Study and Dictation buttons for non-quiz modules
+        if (!hasQuizFormat) {
+            // Bottone Studio (Piccolo accanto)
+            const btnStudy = document.createElement('button');
+            btnStudy.className = 'module-card';
+            btnStudy.style.borderLeft = "2px solid #555"; 
+            btnStudy.innerHTML = `📖 STUDY`;
+            btnStudy.onclick = () => startStudy(moduleName);
+
+            // Bottone Dettato (Icona Cuffie)
+            const btnDictation = document.createElement('button');
+            btnDictation.className = 'module-card';
+            btnDictation.style.borderLeft = "2px solid #555"; 
+            btnDictation.innerHTML = `🎧 DICTATION`;
+            btnDictation.onclick = () => startDictation(moduleName);
+
+            wrapper.appendChild(btnStudy);
+            wrapper.appendChild(btnDictation);
+        }
+        
         modulesGrid.appendChild(wrapper);
     });
 }
@@ -121,6 +148,7 @@ function startGame(moduleName) {
     currentList = library[moduleName];
     isDictationMode = false;
     isStudyMode = false;
+    isQuizMode = false;
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
     
@@ -132,6 +160,29 @@ function startGame(moduleName) {
     document.getElementById('speed-controls').classList.add('hidden');
     
     // Inizializza sessione
+    sessionCorrectCount = 0;
+    updateProgressBar();
+    
+    nextCard();
+}
+
+// --- QUIZ MODE ---
+function startQuiz(moduleName) {
+    currentList = library[moduleName];
+    isDictationMode = false;
+    isStudyMode = false;
+    isQuizMode = true;
+    dashboardPanel.classList.add('hidden');
+    gamePanel.classList.remove('hidden');
+    
+    // Update title and show XP bar
+    document.getElementById('current-mode').textContent = moduleName + " (Quiz)"; 
+    document.getElementById('xp-bar-container').classList.remove('hidden');
+    
+    // Hide speed controls in quiz mode
+    document.getElementById('speed-controls').classList.add('hidden');
+    
+    // Initialize session
     sessionCorrectCount = 0;
     updateProgressBar();
     
@@ -162,12 +213,32 @@ function nextCard() {
     }) || shuffled[0]; // Altrimenti prendine una a caso
 
     const questionText = document.getElementById('question-text');
+    const quizButtons = document.getElementById('quiz-buttons');
 
-    if (isDictationMode) {
+    if (isQuizMode) {
+        // --- QUIZ MODE ---
+        questionText.textContent = currentCard.q; // Show question with blank
+        questionText.style.color = "var(--text-color)";
+        questionText.style.opacity = "1";
+        
+        // Hide input and german keyboard
+        input.style.display = 'none';
+        document.querySelector('.german-keyboard').style.display = 'none';
+        
+        // Show and populate quiz buttons
+        quizButtons.classList.remove('hidden');
+        displayQuizOptions();
+        
+    } else if (isDictationMode) {
         // --- MODALITÀ DETTATO ---
         questionText.textContent = "🎧 Ascolta..."; 
         questionText.style.color = "var(--sub-color)";
         questionText.style.opacity = "0.5";
+        
+        // Show input and german keyboard
+        input.style.display = 'block';
+        document.querySelector('.german-keyboard').style.display = 'flex';
+        quizButtons.classList.add('hidden');
         
         // Parla automaticamente dopo un breve ritardo (per dare tempo di resettare)
         setTimeout(() => speak(currentCard.a), 500);
@@ -177,10 +248,109 @@ function nextCard() {
         questionText.textContent = currentCard.q; // Mostra Italiano
         questionText.style.color = "var(--sub-color)";
         questionText.style.opacity = "1";
+        
+        // Show input and german keyboard
+        input.style.display = 'block';
+        document.querySelector('.german-keyboard').style.display = 'flex';
+        quizButtons.classList.add('hidden');
         // In modalità classica NON parliamo all'inizio, solo alla fine
     }
     
     input.focus();
+}
+
+// Display shuffled quiz options
+function displayQuizOptions() {
+    const quizButtons = document.getElementById('quiz-buttons');
+    quizButtons.innerHTML = ''; // Clear previous buttons
+    
+    // Create array of all options
+    const options = [
+        { text: currentCard.a, isCorrect: true },
+        { text: currentCard.wrong1, isCorrect: false },
+        { text: currentCard.wrong2, isCorrect: false }
+    ];
+    
+    // Shuffle options using Fisher-Yates algorithm
+    for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [options[i], options[j]] = [options[j], options[i]];
+    }
+    
+    // Create buttons for each option
+    options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option-btn';
+        btn.textContent = option.text;
+        btn.onclick = () => checkQuizAnswer(option.isCorrect, btn);
+        quizButtons.appendChild(btn);
+    });
+}
+
+// Check quiz answer when button is clicked
+function checkQuizAnswer(isCorrect, button) {
+    const feedback = document.getElementById('feedback');
+    const allButtons = document.querySelectorAll('.quiz-option-btn');
+    
+    // Disable all buttons after selection
+    allButtons.forEach(btn => {
+        btn.style.pointerEvents = 'none';
+        // Highlight correct answer
+        if (btn.textContent === currentCard.a) {
+            btn.classList.add('correct');
+        }
+    });
+    
+    // Update stats
+    if (!userStats[currentCard.q]) userStats[currentCard.q] = { level: 0, tries: 0 };
+    userStats[currentCard.q].tries++;
+    
+    if (isCorrect) {
+        // Correct answer
+        let msg = `✅ Esatto!`;
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+        feedback.innerHTML = msg;
+        feedback.className = 'success';
+        
+        // Increase level (max 5)
+        if(userStats[currentCard.q].level < 5) userStats[currentCard.q].level++;
+        
+        // XP System
+        let currentXP = parseInt(localStorage.getItem('deutschXP') || '0');
+        currentXP += 10; // 10 XP per question
+        localStorage.setItem('deutschXP', currentXP);
+        
+        sessionCorrectCount++;
+        updateProgressBar();
+        updateRank(currentXP);
+        
+        // Speak the answer
+        speak(currentCard.a);
+        
+        saveAndNext();
+        
+    } else {
+        // Wrong answer
+        button.classList.add('incorrect');
+        
+        let msg = `❌ No! Era: <b>${currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</b>`;
+        const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+        
+        feedback.innerHTML = msg;
+        feedback.className = 'error';
+        
+        // Speak the correct answer
+        speak(currentCard.a);
+        
+        // Reset level
+        userStats[currentCard.q].level = 0; 
+        localStorage.setItem('deutschStats', JSON.stringify(userStats));
+        
+        // Go to next after delay
+        setTimeout(nextCard, 3000);
+    }
 }
 
 // --- 4. CONTROLLO ---
