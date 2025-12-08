@@ -488,3 +488,175 @@ input[type="file"] { display: none; }
     border-radius: 4px;
     border-left: 3px solid var(--main-color);
 }
+
+/* GENDER COLOR CODING SYSTEM */
+/* Sistema a colori per visualizzare il genere grammaticale tedesco */
+:root {
+    --gender-der-color: #4A90E2; /* Blu per DER (maschile) */
+    --gender-die-color: #E74C3C; /* Rosso per DIE (femminile) */
+    --gender-das-color: #F39C12; /* Giallo/Arancio per DAS (neutro) */
+}
+
+/* Evidenzia gli articoli con colori */
+.gender-der {
+    color: var(--gender-der-color) !important;
+    font-weight: bold;
+}
+
+.gender-die {
+    color: var(--gender-die-color) !important;
+    font-weight: bold;
+}
+
+.gender-das {
+    color: var(--gender-das-color) !important;
+    font-weight: bold;
+}
+
+/* Badge genere per feedback */
+.gender-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-left: 8px;
+    text-transform: uppercase;
+}
+
+.gender-badge.der {
+    background: var(--gender-der-color);
+    color: #fff;
+}
+
+.gender-badge.die {
+    background: var(--gender-die-color);
+    color: #fff;
+}
+
+.gender-badge.das {
+    background: var(--gender-das-color);
+    color: #fff;
+}
+
+/* Legend genere nella dashboard */
+.gender-legend {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--sub-color);
+}
+
+.gender-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.gender-color-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.gender-color-box.der {
+    background: var(--gender-der-color);
+}
+
+.gender-color-box.die {
+    background: var(--gender-die-color);
+}
+
+.gender-color-box.das {
+    background: var(--gender-das-color);
+}
+
+/* FALSI AMICI ALERT STYLES */
+.false-friend-alert {
+    background: rgba(231, 76, 60, 0.15);
+    border: 2px solid var(--error-color);
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 10px;
+    animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+.false-friend-alert::before {
+    content: "⚠️ FALSO AMICO! ";
+    font-weight: bold;
+    color: var(--error-color);
+}
+
+@keyframes pulse-warning {
+    0%, 100% {
+        border-color: var(--error-color);
+        box-shadow: 0 0 0 rgba(202, 71, 84, 0);
+    }
+    50% {
+        border-color: #ff6b7a;
+        box-shadow: 0 0 15px rgba(202, 71, 84, 0.5);
+    }
+}
+
+/* BITE-SIZE MODULE INDICATORS */
+.module-level-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    margin-right: 8px;
+}
+
+.module-level-badge.a1 {
+    background: #27ae60;
+    color: white;
+}
+
+.module-level-badge.a2 {
+    background: #2ecc71;
+    color: white;
+}
+
+.module-level-badge.b1 {
+    background: #f39c12;
+    color: white;
+}
+
+.module-level-badge.b2 {
+    background: #e67e22;
+    color: white;
+}
+
+.module-level-badge.c1 {
+    background: #e74c3c;
+    color: white;
+}
+
+.module-level-badge.c2 {
+    background: #c0392b;
+    color: white;
+}
+
+/* Micro-learning progress indicator */
+.micro-progress {
+    font-size: 0.7rem;
+    color: var(--sub-color);
+    margin-top: 5px;
+}
+
+.micro-progress-bar {
+    height: 3px;
+    background: #444;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.micro-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    transition: width 0.3s ease;
+}

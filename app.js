@@ -237,6 +237,25 @@ function showDashboard() {
     APP_STATE.currentMode = 'NORMAL';
     DOM.modulesGrid.innerHTML = '';
 
+    // Aggiungi legenda colori genere
+    const legend = document.createElement('div');
+    legend.className = 'gender-legend';
+    legend.innerHTML = `
+        <div class="gender-legend-item">
+            <div class="gender-color-box der"></div>
+            <span>🔵 DER (Maschile)</span>
+        </div>
+        <div class="gender-legend-item">
+            <div class="gender-color-box die"></div>
+            <span>🔴 DIE (Femminile)</span>
+        </div>
+        <div class="gender-legend-item">
+            <div class="gender-color-box das"></div>
+            <span>🟡 DAS (Neutro)</span>
+        </div>
+    `;
+    DOM.modulesGrid.appendChild(legend);
+
     // --- ORDINAMENTO ALFANUMERICO ---
     // Ordina le chiavi in modo alfanumerico (01, 02, 03, A1, B1...)
     const sortedKeys = Object.keys(APP_STATE.library).sort((a, b) => {
@@ -260,11 +279,14 @@ function showDashboard() {
         if (mod.type === 'QUIZ') icon = '🧩';
         if (mod.type === 'STORY') icon = '📜';
         
+        // Rileva il livello CEFR dalla chiave del modulo
+        const levelBadge = detectCEFRLevel(key);
+        
         // Rimuovi underscore e prefissi numerici dal nome visualizzato per pulizia
         // Es: "05 Casa e Mobili" diventa "Casa e Mobili"
         const cleanName = mod.name.replace(/^\d+[\s_]/, '').replace(/_/g, ' ');
 
-        btnMain.innerHTML = `<span>${icon} ${cleanName}</span> <span class="word-count">${mod.data.length} parole</span>`;
+        btnMain.innerHTML = `<span>${levelBadge}${icon} ${cleanName}</span> <span class="word-count">${mod.data.length} parole</span>`;
         
         // Assegnazione Azione click
         if (mod.type === 'QUIZ') btnMain.onclick = () => initGame(key, 'QUIZ');
@@ -284,6 +306,31 @@ function showDashboard() {
 
         DOM.modulesGrid.appendChild(wrapper);
     });
+}
+
+/**
+ * Rileva il livello CEFR dal nome del modulo e restituisce un badge HTML
+ * @param {string} moduleName - Nome del modulo
+ * @returns {string} - HTML del badge livello
+ */
+function detectCEFRLevel(moduleName) {
+    const name = moduleName.toLowerCase();
+    
+    if (name.includes('a1')) {
+        return '<span class="module-level-badge a1">A1</span> ';
+    } else if (name.includes('a2')) {
+        return '<span class="module-level-badge a2">A2</span> ';
+    } else if (name.includes('b1')) {
+        return '<span class="module-level-badge b1">B1</span> ';
+    } else if (name.includes('b2')) {
+        return '<span class="module-level-badge b2">B2</span> ';
+    } else if (name.includes('c1')) {
+        return '<span class="module-level-badge c1">C1</span> ';
+    } else if (name.includes('c2')) {
+        return '<span class="module-level-badge c2">C2</span> ';
+    }
+    
+    return '';
 }
 
 function createSubButton(text, onClick) {
@@ -544,7 +591,15 @@ function checkInputAnswer() {
     }
 
     if (isCorrect) {
-        feedbackSuccess(APP_STATE.currentMode === 'STORY' ? '✅ Continua così!' : '✅ Esatto!');
+        let successMsg = APP_STATE.currentMode === 'STORY' ? '✅ Continua così!' : '✅ Esatto!';
+        
+        // Controlla se contiene falsi amici per avvisare l'utente
+        const falseFriend = detectFalseFriend(correctVal);
+        if (falseFriend) {
+            successMsg += `<div class="false-friend-alert">Attenzione: "${falseFriend}" è un falso amico!</div>`;
+        }
+        
+        feedbackSuccess(successMsg);
         speak(APP_STATE.currentCard.a.replace(/{(\w+)}/g, (match, varName) => APP_STATE.storyVars[varName] || "")); 
         handleSuccessLogic();
     } else {
@@ -555,6 +610,12 @@ function checkInputAnswer() {
         // Aggiungi la nota grammaticale se presente
         if (APP_STATE.currentCard.note) {
             errorMsg += `<span class="grammar-note">💡 ${APP_STATE.currentCard.note}</span>`;
+        }
+        
+        // Controlla se la risposta corretta contiene falsi amici
+        const falseFriend = detectFalseFriend(correctVal);
+        if (falseFriend) {
+            errorMsg += `<div class="false-friend-alert">Attenzione: "${falseFriend}" è un falso amico comune per italofoni!</div>`;
         }
         
         feedbackError(errorMsg);
@@ -616,13 +677,58 @@ function switchPanel(panelName) {
 }
 
 function feedbackSuccess(msg) {
-    DOM.game.feedback.innerHTML = msg;
+    // Applica color coding per genere se presente
+    const coloredMsg = applyGenderColorCoding(msg);
+    DOM.game.feedback.innerHTML = coloredMsg;
     DOM.game.feedback.className = 'success flash-correct';
 }
 
 function feedbackError(msg) {
-    DOM.game.feedback.innerHTML = msg;
+    // Applica color coding per genere se presente
+    const coloredMsg = applyGenderColorCoding(msg);
+    DOM.game.feedback.innerHTML = coloredMsg;
     DOM.game.feedback.className = 'error shake';
+}
+
+/**
+ * Applica color coding agli articoli tedeschi (Der/Die/Das)
+ * @param {string} text - Testo da colorare
+ * @returns {string} - Testo con HTML per colori
+ */
+function applyGenderColorCoding(text) {
+    if (!text) return text;
+    
+    // Sostituisci Der/der con versione colorata (blu)
+    text = text.replace(/\b(Der|der)\b/g, '<span class="gender-der">$1</span>');
+    
+    // Sostituisci Die/die con versione colorata (rosso)
+    text = text.replace(/\b(Die|die)\b/g, '<span class="gender-die">$1</span>');
+    
+    // Sostituisci Das/das con versione colorata (giallo)
+    text = text.replace(/\b(Das|das)\b/g, '<span class="gender-das">$1</span>');
+    
+    // Sostituisci anche le forme declinate comuni
+    // Nota: Dem e Des possono essere sia maschili che neutri, quindi uso colore neutro generico
+    text = text.replace(/\b(Den|den)\b/g, '<span class="gender-der">$1</span>'); // Accusativo maschile
+    
+    return text;
+}
+
+/**
+ * Rileva se una parola contiene un "falso amico" comune per italofoni
+ * @param {string} text - Testo da verificare
+ * @returns {string|null} - Nome del falso amico se trovato, null altrimenti
+ */
+function detectFalseFriend(text) {
+    const falseFriends = [
+        'kantine', 'kondom', 'regal', 'peinlich', 'kamera', 
+        'sensibel', 'marke', 'firma', 'eventuell', 'tasse',
+        'argument', 'lokal', 'kollege'
+    ];
+    
+    const lowerText = text.toLowerCase();
+    const found = falseFriends.find(friend => lowerText.includes(friend));
+    return found || null;
 }
 
 function updateProgressBar() {
