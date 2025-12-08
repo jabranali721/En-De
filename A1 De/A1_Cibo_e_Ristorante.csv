@@ -1,10 +1,11 @@
-Il pane;Das Brot
-L'acqua;Das Wasser
-Il caffè;Der Kaffee
-Il tè;Der Tee
-La carne;Das Fleisch
-Il pesce;Der Fisch
-La verdura;Das Gemüse
-La frutta;Das Obst
-Il conto, per favore;Die Rechnung, bitte
-Un tavolo per due;Ein Tisch für zwei
+!THEORY;Al Ristorante 🍽️:|Non dire "Ich will" (Io voglio), è maleducato!|Usa "Ich möchte" (Vorrei).|Acqua in Germania? Se chiedi 'Wasser' è sempre frizzante. Per l'naturale chiedi 'Stilles Wasser'.
+Il pane;Das Brot;Neutro
+L'acqua;Das Wasser;Neutro (spesso frizzante di default)
+Il caffè;Der Kaffee;Maschile
+Il tè;Der Tee;Maschile
+La carne;Das Fleisch;Neutro
+Il pesce;Der Fisch;Maschile
+La verdura;Das Gemüse;Neutro (collettivo)
+La frutta;Das Obst;Neutro (collettivo, non ha plurale)
+Il conto, per favore;Die Rechnung, bitte;Frase fissa
+Un tavolo per due;Ein Tisch für zwei;'Für' regge l'accusativo

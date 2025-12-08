@@ -1,12 +1,13 @@
-Uno;Eins
-Dieci;Zehn
-Cento;Hundert
-Oggi;Heute
-Domani;Morgen
-La settimana;Die Woche
-Il giorno;Der Tag
-L'ora;Die Stunde
-La stazione;Der Bahnhof
-La farmacia;Die Apotheke
-L'ufficio postale;Die Post
-Il mercato;Der Markt
+!THEORY;Matematica Tedesca 🧮:|Dai 21 in su, si dicono prima le unità e poi le decine.|Esempio: 24 = "Vier-und-zwanzig" (Quattro-e-venti).|Ricorda: I nomi dei giorni e dei mesi sono tutti MASCHILI (Der Montag, Der Mai).
+Uno;Eins;Si usa per contare (1, 2, 3...)
+Dieci;Zehn;Numero base
+Cento;Hundert;Neutro
+Oggi;Heute;Avverbio di tempo
+Domani;Morgen;Attenzione: 'morgen' (domani) vs 'Morgen' (mattina)
+La settimana;Die Woche;Femminile
+Il giorno;Der Tag;Maschile (Saluto: Guten Tag)
+L'ora;Die Stunde;Intesa come durata (60 minuti)
+La stazione;Der Bahnhof;Maschile (Hof = corte)
+La farmacia;Die Apotheke;Femminile (parola greca -> -e)
+L'ufficio postale;Die Post;Femminile
+Il mercato;Der Markt;Maschile
