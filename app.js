@@ -145,14 +145,15 @@ DOM.folderInput.addEventListener('change', async function(e) {
                 const text = await readFile(file);
                 // Determina il tipo di modulo in base al nome o contenuto
                 const moduleType = detectModuleType(file.name, text);
-                const content = parseCSV(text, moduleType);
+                const parsed = parseCSV(text, moduleType); // Ora parseCSV ritorna un oggetto {data, theory}
                 
-                if (content.length > 0) {
+                if (parsed.data.length > 0) {
                     // Chiave univoca per il modulo
                     const moduleKey = file.name.replace('.csv', '');
                     APP_STATE.library[moduleKey] = {
                         type: moduleType, // 'QUIZ', 'STORY', 'NORMAL'
-                        data: content,
+                        data: parsed.data,
+                        theory: parsed.theory, // Salviamo la teoria
                         name: moduleKey.replace(/_/g, ' ')
                     };
                 }
@@ -189,26 +190,44 @@ function detectModuleType(filename, text) {
 }
 
 function parseCSV(text, type) {
-    return text.split('\n').map(line => {
+    let theoryText = null;
+    
+    const lines = text.split('\n').filter(l => l.trim() !== '');
+    
+    // Controlla se c'è la teoria nella prima riga o altrove
+    const content = lines.map(line => {
+        // Se la riga inizia con !THEORY, salviamo il testo e saltiamo la riga
+        if (line.startsWith('!THEORY')) {
+            theoryText = line.split(';')[1] || ""; 
+            // Supporto per "a capo" nel CSV usando il simbolo |
+            theoryText = theoryText.replace(/\|/g, '\n');
+            return null;
+        }
+
         const p = line.split(';');
         if (p.length < 2) return null;
 
         if (type === 'QUIZ' && p.length >= 4) {
             return {
                 q: p[0].trim(),
-                options: [p[1].trim(), p[2].trim(), p[3].trim()], // Tutte le opzioni
-                a: p[3].trim(), // L'ultima è sempre quella giusta nel CSV
-                type: 'QUIZ'
+                options: [p[1].trim(), p[2].trim(), p[3].trim()],
+                a: p[3].trim(),
+                type: 'QUIZ',
+                note: p[4] ? p[4].trim() : null // Eventuale nota anche nei quiz
             };
         }
         
-        // Formato Story o Normal
+        // Formato Story o Normal con 3° colonna opzionale
         return { 
             q: p[0].trim(), 
             a: p[1].trim(),
+            note: p[2] ? p[2].trim() : null, // Cattura la nota
             type: type 
         };
     }).filter(item => item);
+
+    // Restituiamo sia i dati che la teoria
+    return { data: content, theory: theoryText };
 }
 
 // --- 2. DASHBOARD E NAVIGAZIONE ---
@@ -283,20 +302,43 @@ function initGame(moduleKey, mode) {
     APP_STATE.currentMode = mode;
     APP_STATE.sessionCorrect = 0;
     
+    // Setup UI base
+    DOM.nav.modeLabel.textContent = `${module.name} (${mode})`;
+    DOM.nav.xpContainer.classList.remove('hidden');
+    updateProgressBar();
+
     // Reset specifici per modalità
     if (mode === 'STORY') {
         APP_STATE.storyIndex = 0;
         APP_STATE.storyVars = {}; // Reset variabili
     }
 
-    // Aggiorna UI
+    // --- NUOVA LOGICA TEORIA ---
+    const modal = document.getElementById('theory-modal');
+    const theoryText = document.getElementById('theory-text');
+    const startBtn = document.getElementById('start-game-btn');
+
+    // Se il modulo ha teoria, mostrala prima di iniziare
+    // (eccetto in modalità DICTATION dove l'audio è più importante)
+    if (module.theory && mode !== 'DICTATION') {
+        theoryText.textContent = module.theory;
+        modal.classList.remove('hidden'); // Mostra popup
+        
+        // Quando clicchi "Inizia"
+        startBtn.onclick = () => {
+            modal.classList.add('hidden'); // Nascondi popup
+            startGameFlow(mode); // Avvia davvero
+        };
+    } else {
+        // Nessuna teoria, parti subito
+        startGameFlow(mode);
+    }
+}
+
+// Funzione helper per evitare codice duplicato
+function startGameFlow(mode) {
     switchPanel('game');
-    DOM.nav.modeLabel.textContent = `${module.name} (${mode})`;
-    DOM.nav.xpContainer.classList.remove('hidden');
-    
     updateGameUI(mode);
-    updateProgressBar();
-    
     nextCard();
 }
 
@@ -441,7 +483,14 @@ function handleQuizAnswer(btn, val) {
             .find(b => b.textContent === correct)
             ?.classList.add('correct');
         
-        feedbackError(`Era: ${correct}`);
+        let errorMsg = `Era: ${correct}`;
+        
+        // Aggiungi la nota grammaticale se presente
+        if (APP_STATE.currentCard.note) {
+            errorMsg += `<span class="grammar-note">💡 ${APP_STATE.currentCard.note}</span>`;
+        }
+        
+        feedbackError(errorMsg);
         speak(textToSpeak); // <--- PARLA ANCHE SE SBAGLI (Rinforzo positivo)
         handleErrorLogic();
     }
@@ -501,7 +550,14 @@ function checkInputAnswer() {
     } else {
         // Sostituisci variabili nel messaggio di errore per far capire cosa si aspettava
         const hint = injectVariables(correctVal);
-        feedbackError(`No! Era: <b>${hint}</b>`);
+        let errorMsg = `No! Era: <b>${hint}</b>`;
+        
+        // Aggiungi la nota grammaticale se presente
+        if (APP_STATE.currentCard.note) {
+            errorMsg += `<span class="grammar-note">💡 ${APP_STATE.currentCard.note}</span>`;
+        }
+        
+        feedbackError(errorMsg);
         speak(hint);
         handleErrorLogic();
     }

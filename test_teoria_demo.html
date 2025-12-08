@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Deutsch Type - Theory Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="logo">🇩🇪 <span id="current-mode">Theory Demo</span></div>
+    </nav>
+
+    <div class="main-stage">
+        <div id="demo-panel">
+            <button onclick="loadTestModule()" class="module-card" style="max-width: 400px;">
+                📚 Carica Modulo di Test con Teoria
+            </button>
+            <p style="color: var(--sub-color); margin-top: 20px;">
+                Questo demo caricherà un modulo con teoria e note grammaticali
+            </p>
+        </div>
+
+        <div id="game-panel" class="hidden">
+            <div class="typing-area">
+                <div id="question-text" class="prompt-text">caricamento...</div>
+                <input type="text" id="answer-input" autocomplete="off" spellcheck="false">
+                
+                <div class="german-keyboard">
+                    <button class="german-char-btn" onclick="insertChar('ä')">ä</button>
+                    <button class="german-char-btn" onclick="insertChar('ö')">ö</button>
+                    <button class="german-char-btn" onclick="insertChar('ü')">ü</button>
+                    <button class="german-char-btn" onclick="insertChar('ß')">ß</button>
+                </div>
+                
+                <div id="feedback" class="fade-in"></div>
+            </div>
+
+            <div class="controls">
+                <button id="check-btn">Invio</button>
+                <button onclick="location.reload()" class="text-btn">Ricomincia</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theory Modal -->
+    <div id="theory-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color: var(--main-color); margin-top: 0;">📚 Teoria</h2>
+            <div id="theory-text" class="theory-body"></div>
+            <button id="start-game-btn" class="module-card" style="margin-top: 20px; width: 100%; text-align: center;">
+                ▶️ Inizia
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Simplified version of app.js for demo
+        const APP_STATE = {
+            currentCard: null,
+            currentIndex: 0,
+            cards: []
+        };
+
+        const DOM = {
+            question: document.getElementById('question-text'),
+            input: document.getElementById('answer-input'),
+            feedback: document.getElementById('feedback'),
+            checkBtn: document.getElementById('check-btn'),
+            gamePanel: document.getElementById('game-panel'),
+            demoPanel: document.getElementById('demo-panel')
+        };
+
+        function loadTestModule() {
+            // Simulate CSV data with theory and notes
+            const csvData = `!THEORY;In tedesco ci sono 3 generi: Maschile (Der), Femminile (Die), Neutro (Das). Impara bene gli articoli!
+Il cane;Der Hund;Maschile (animali maschi)
+Il gatto;Die Katze;Femminile
+La ragazza;Das Mädchen;Neutro (diminutivo in -chen)
+Il libro;Das Buch;Neutro
+L'uomo;Der Mann;Maschile`;
+
+            const parsed = parseCSVDemo(csvData);
+            APP_STATE.cards = parsed.data;
+            
+            // Show theory modal
+            const modal = document.getElementById('theory-modal');
+            const theoryText = document.getElementById('theory-text');
+            const startBtn = document.getElementById('start-game-btn');
+            
+            theoryText.textContent = parsed.theory;
+            modal.classList.remove('hidden');
+            
+            startBtn.onclick = () => {
+                modal.classList.add('hidden');
+                startGame();
+            };
+        }
+
+        function parseCSVDemo(text) {
+            let theoryText = null;
+            const lines = text.split('\n').filter(l => l.trim() !== '');
+            
+            const content = lines.map(line => {
+                if (line.startsWith('!THEORY')) {
+                    theoryText = line.split(';')[1] || "";
+                    return null;
+                }
+                
+                const p = line.split(';');
+                if (p.length < 2) return null;
+                
+                return {
+                    q: p[0].trim(),
+                    a: p[1].trim(),
+                    note: p[2] ? p[2].trim() : null
+                };
+            }).filter(item => item);
+            
+            return { data: content, theory: theoryText };
+        }
+
+        function startGame() {
+            document.getElementById('demo-panel').classList.add('hidden');
+            DOM.gamePanel.classList.remove('hidden');
+            APP_STATE.currentIndex = 0;
+            nextCard();
+        }
+
+        function nextCard() {
+            if (APP_STATE.currentIndex >= APP_STATE.cards.length) {
+                DOM.feedback.innerHTML = '✅ Modulo completato!';
+                DOM.feedback.className = 'success';
+                return;
+            }
+            
+            APP_STATE.currentCard = APP_STATE.cards[APP_STATE.currentIndex];
+            DOM.question.textContent = APP_STATE.currentCard.q;
+            DOM.input.value = '';
+            DOM.feedback.innerHTML = '';
+            DOM.input.focus();
+        }
+
+        function checkAnswer() {
+            const userVal = DOM.input.value.trim();
+            const correctVal = APP_STATE.currentCard.a;
+            
+            if (userVal.toLowerCase() === correctVal.toLowerCase()) {
+                DOM.feedback.innerHTML = '✅ Esatto!';
+                DOM.feedback.className = 'success flash-correct';
+                APP_STATE.currentIndex++;
+                setTimeout(nextCard, 1500);
+            } else {
+                let errorMsg = `No! Era: <b>${correctVal}</b>`;
+                
+                if (APP_STATE.currentCard.note) {
+                    errorMsg += `<span class="grammar-note">💡 ${APP_STATE.currentCard.note}</span>`;
+                }
+                
+                DOM.feedback.innerHTML = errorMsg;
+                DOM.feedback.className = 'error shake';
+                
+                setTimeout(() => {
+                    APP_STATE.currentIndex++;
+                    nextCard();
+                }, 3000);
+            }
+        }
+
+        function insertChar(char) {
+            const input = DOM.input;
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const text = input.value;
+            input.value = text.substring(0, start) + char + text.substring(end);
+            input.selectionStart = input.selectionEnd = start + char.length;
+            input.focus();
+        }
+
+        DOM.checkBtn.onclick = checkAnswer;
+        DOM.input.onkeypress = (e) => { if(e.key === 'Enter') checkAnswer(); };
+    </script>
+</body>
+</html>
