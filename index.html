@@ -39,6 +39,14 @@
 
         <div id="game-panel" class="hidden">
             
+            <div id="speed-controls" class="speed-bar hidden">
+                <span class="sub-label">SPEED:</span>
+                <button class="speed-btn" data-rate="0.7" onclick="setSpeed(0.7)">🐢 Slow</button>
+                <button class="speed-btn active" data-rate="1.0" onclick="setSpeed(1.0)">👤 Normal</button>
+                <button class="speed-btn" data-rate="1.3" onclick="setSpeed(1.3)">🐇 Fast</button>
+                <button class="replay-btn" onclick="replayAudio()">🔊 Replay</button>
+            </div>
+
             <div class="typing-area">
                 <div id="question-text" class="prompt-text">caricamento...</div>
                 
