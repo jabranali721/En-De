@@ -379,3 +379,8 @@ input[type="file"] { display: none; }
     border-color: var(--error-color);
     animation: shake 0.3s ease-in-out;
 }
+
+.quiz-option-btn.active-key {
+    transform: scale(0.98);
+    box-shadow: 0 0 15px var(--main-color);
+}

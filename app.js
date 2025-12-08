@@ -400,21 +400,34 @@ function renderQuizButtons() {
 
 function handleQuizAnswer(btn, val) {
     const correct = APP_STATE.currentCard.a;
-    // Disabilita click
+    const question = APP_STATE.currentCard.q;
+    
+    // Disabilita tutti i bottoni per evitare doppi click
     Array.from(DOM.game.quizContainer.children).forEach(b => b.disabled = true);
 
+    // --- LOGICA TTS INTELLIGENTE ---
+    // Se la domanda contiene i trattini "___", li sostituiamo con la risposta corretta
+    // per leggere la frase completa. Altrimenti leggiamo solo la risposta.
+    let textToSpeak = correct;
+    if (/_+/.test(question)) {
+        // Sostituisce i trattini (o underscore) con la parola corretta
+        textToSpeak = question.replace(/_+/g, correct);
+    }
+
     if (val === correct) {
-        btn.classList.add('correct'); // Verde
+        btn.classList.add('correct');
         feedbackSuccess(`Esatto! ${correct}`);
+        speak(textToSpeak); // <--- PARLA ORA (Frase completa)
         handleSuccessLogic();
     } else {
-        btn.classList.add('incorrect'); // Rosso
-        // Evidenzia quella giusta
+        btn.classList.add('incorrect');
+        // Evidenzia comunque la risposta giusta
         Array.from(DOM.game.quizContainer.children)
             .find(b => b.textContent === correct)
             ?.classList.add('correct');
         
         feedbackError(`Era: ${correct}`);
+        speak(textToSpeak); // <--- PARLA ANCHE SE SBAGLI (Rinforzo positivo)
         handleErrorLogic();
     }
 }
@@ -709,6 +722,33 @@ function showHint() {
     DOM.game.feedback.textContent = "👀 Hint usato...";
     DOM.game.feedback.className = 'sub-label';
 }
+
+// Gestione tasti numerici per il QUIZ (1, 2, 3)
+document.addEventListener('keydown', (e) => {
+    // Funziona solo se siamo in modalità QUIZ e i bottoni sono visibili
+    if (APP_STATE.currentMode === 'QUIZ' && !DOM.game.quizContainer.classList.contains('hidden')) {
+        const buttons = DOM.game.quizContainer.querySelectorAll('button');
+        
+        // Verifica che sia un tasto numerico valido (1, 2, 3)
+        if (!/^[1-3]$/.test(e.key)) return;
+        
+        // Mappa i tasti 1, 2, 3 agli indici dell'array 0, 1, 2
+        const index = parseInt(e.key, 10) - 1;
+
+        if (index >= 0 && index < buttons.length && !buttons[index].disabled) {
+            // Simula il click sul bottone corrispondente
+            buttons[index].click();
+            
+            // Aggiunge un piccolo feedback visivo di "pressione"
+            buttons[index].classList.add('active-key');
+            
+            // Rimuove il feedback dopo un breve momento
+            setTimeout(() => {
+                buttons[index].classList.remove('active-key');
+            }, 200);
+        }
+    }
+});
 
 // Init
 DOM.homeBtn.onclick = showDashboard;
