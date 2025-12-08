@@ -359,7 +359,7 @@ function insertChar(char) {
     // Insert character at cursor position
     input.value = text.substring(0, start) + char + text.substring(end);
     
-    // Move cursor after inserted character (handle multi-byte characters)
+    // Move cursor after inserted character
     input.selectionStart = input.selectionEnd = start + char.length;
     
     // Keep focus on input
