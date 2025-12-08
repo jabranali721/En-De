@@ -60,23 +60,33 @@ input[type="file"] { display: none; }
 /* 2. DASHBOARD STYLE */
 .sub-label { color: var(--sub-color); margin-bottom: 20px; }
 .text-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    display: flex;               /* Usa flex invece di grid */
+    flex-direction: column;      /* Dispone gli elementi in colonna */
+    gap: 10px;                   /* Spazio tra i moduli */
     width: 100%;
+    max-width: 600px;            /* Limita la larghezza per non allargarli troppo */
+    margin: 0 auto;              /* Centra la lista nella pagina */
 }
 .module-card {
-    background: transparent;
-    border: none;
-    color: var(--sub-color);
+    background: #2c2e31;         /* Sfondo leggermente più chiaro */
+    border: 1px solid var(--sub-color); /* Bordo sottile */
+    color: var(--text-color);
     font-family: 'Roboto Mono', monospace;
     font-size: 1rem;
     text-align: left;
     cursor: pointer;
-    padding: 10px;
-    transition: 0.2s;
+    padding: 15px 20px;          /* Più spazio interno */
+    transition: all 0.2s;
+    border-radius: 8px;          /* Angoli arrotondati */
+    display: flex;
+    justify-content: space-between; /* Spinge eventuale testo a destra */
+    align-items: center;
 }
-.module-card:hover { color: var(--main-color); transform: translateX(5px); }
+.module-card:hover { 
+    border-color: var(--main-color);
+    transform: translateX(10px); /* Effetto scorrimento a destra */
+    background: #3a3c3f;
+}
 
 /* 3. TYPING AREA (Il cuore) */
 .typing-area {

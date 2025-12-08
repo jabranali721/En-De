@@ -218,31 +218,55 @@ function showDashboard() {
     APP_STATE.currentMode = 'NORMAL';
     DOM.modulesGrid.innerHTML = '';
 
-    Object.keys(APP_STATE.library).forEach(key => {
+    // --- ORDINAMENTO ALFANUMERICO ---
+    // Ordina le chiavi in modo alfanumerico (01, 02, 03, A1, B1...)
+    const sortedKeys = Object.keys(APP_STATE.library).sort((a, b) => {
+        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
+    sortedKeys.forEach(key => {
         const mod = APP_STATE.library[key];
         const wrapper = document.createElement('div');
+        wrapper.style.display = "flex"; // Usa flex per mettere i bottoni vicini
+        wrapper.style.gap = "10px";
         wrapper.style.marginBottom = "10px";
 
-        // Bottone Principale (cambia in base al tipo)
+        // Bottone Principale (Modulo)
         const btnMain = document.createElement('button');
         btnMain.className = 'module-card';
+        btnMain.style.flex = "1"; // Occupa tutto lo spazio disponibile
         
-        if (mod.type === 'QUIZ') {
-            btnMain.innerHTML = `🧩 QUIZ: ${mod.name}`;
-            btnMain.onclick = () => initGame(key, 'QUIZ');
-        } else if (mod.type === 'STORY') {
-            btnMain.innerHTML = `📜 STORY: ${mod.name}`;
-            btnMain.onclick = () => initGame(key, 'STORY');
-        } else {
-            btnMain.innerHTML = `🎮 PLAY: ${mod.name}`;
-            btnMain.onclick = () => initGame(key, 'NORMAL');
-        }
+        // Icone e Nomi più puliti
+        let icon = '🎮';
+        if (mod.type === 'QUIZ') icon = '🧩';
+        if (mod.type === 'STORY') icon = '📜';
+        
+        // Rimuovi underscore e prefissi numerici dal nome visualizzato per pulizia
+        // Es: "05_Casa_e_Mobili" diventa "Casa e Mobili"
+        const cleanName = mod.name.replace(/^\d+_/, '').replace(/_/g, ' ');
+
+        btnMain.innerHTML = `<span>${icon} ${cleanName}</span> <span style="font-size:0.8em; opacity:0.6">${mod.data.length} parole</span>`;
+        
+        // Assegnazione Azione click
+        if (mod.type === 'QUIZ') btnMain.onclick = () => initGame(key, 'QUIZ');
+        else if (mod.type === 'STORY') btnMain.onclick = () => initGame(key, 'STORY');
+        else btnMain.onclick = () => initGame(key, 'NORMAL');
+        
         wrapper.appendChild(btnMain);
 
-        // Aggiungi bottoni extra SOLO se è un modulo normale
+        // Aggiungi bottoni extra (Piccoli, a destra)
         if (mod.type === 'NORMAL') {
-            const btnStudy = createSubButton('📖 STUDY', () => initStudy(key));
-            const btnDict = createSubButton('🎧 DICTATION', () => initGame(key, 'DICTATION'));
+            const btnStudy = createSubButton('📖', () => initStudy(key));
+            const btnDict = createSubButton('🎧', () => initGame(key, 'DICTATION'));
+            
+            // Stile specifico per i bottoni piccoli laterali
+            [btnStudy, btnDict].forEach(btn => {
+                btn.style.width = "50px"; // Quadrati
+                btn.style.padding = "0";
+                btn.style.justifyContent = "center";
+                btn.style.borderLeft = "1px solid var(--sub-color)"; // Reset bordo
+            });
+
             wrapper.appendChild(btnStudy);
             wrapper.appendChild(btnDict);
         }
