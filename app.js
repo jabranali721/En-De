@@ -591,7 +591,15 @@ function checkInputAnswer() {
     }
 
     if (isCorrect) {
-        feedbackSuccess(APP_STATE.currentMode === 'STORY' ? '✅ Continua così!' : '✅ Esatto!');
+        let successMsg = APP_STATE.currentMode === 'STORY' ? '✅ Continua così!' : '✅ Esatto!';
+        
+        // Controlla se contiene falsi amici per avvisare l'utente
+        const falseFriend = detectFalseFriend(correctVal);
+        if (falseFriend) {
+            successMsg += `<div class="false-friend-alert">Attenzione: "${falseFriend}" è un falso amico!</div>`;
+        }
+        
+        feedbackSuccess(successMsg);
         speak(APP_STATE.currentCard.a.replace(/{(\w+)}/g, (match, varName) => APP_STATE.storyVars[varName] || "")); 
         handleSuccessLogic();
     } else {
@@ -602,6 +610,12 @@ function checkInputAnswer() {
         // Aggiungi la nota grammaticale se presente
         if (APP_STATE.currentCard.note) {
             errorMsg += `<span class="grammar-note">💡 ${APP_STATE.currentCard.note}</span>`;
+        }
+        
+        // Controlla se la risposta corretta contiene falsi amici
+        const falseFriend = detectFalseFriend(correctVal);
+        if (falseFriend) {
+            errorMsg += `<div class="false-friend-alert">Attenzione: "${falseFriend}" è un falso amico comune per italofoni!</div>`;
         }
         
         feedbackError(errorMsg);
@@ -694,17 +708,16 @@ function applyGenderColorCoding(text) {
     text = text.replace(/\b(Das|das)\b/g, '<span class="gender-das">$1</span>');
     
     // Sostituisci anche le forme declinate comuni
+    // Nota: Dem e Des possono essere sia maschili che neutri, quindi uso colore neutro generico
     text = text.replace(/\b(Den|den)\b/g, '<span class="gender-der">$1</span>'); // Accusativo maschile
-    text = text.replace(/\b(Dem|dem)\b/g, '<span class="gender-der">$1</span>'); // Dativo maschile/neutro
-    text = text.replace(/\b(Des|des)\b/g, '<span class="gender-der">$1</span>'); // Genitivo
     
     return text;
 }
 
 /**
- * Rileva se una parola contiene un "falso amico" comune
+ * Rileva se una parola contiene un "falso amico" comune per italofoni
  * @param {string} text - Testo da verificare
- * @returns {boolean} - True se contiene un falso amico
+ * @returns {string|null} - Nome del falso amico se trovato, null altrimenti
  */
 function detectFalseFriend(text) {
     const falseFriends = [
@@ -714,7 +727,8 @@ function detectFalseFriend(text) {
     ];
     
     const lowerText = text.toLowerCase();
-    return falseFriends.some(friend => lowerText.includes(friend));
+    const found = falseFriends.find(friend => lowerText.includes(friend));
+    return found || null;
 }
 
 function updateProgressBar() {
