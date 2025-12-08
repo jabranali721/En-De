@@ -365,7 +365,13 @@ function setSpeed(rate) {
     
     // Aggiorna UI bottoni
     document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    // Find the button that was clicked by matching the rate
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+        const btnRate = parseFloat(btn.getAttribute('onclick').match(/\d+\.?\d*/)[0]);
+        if (btnRate === rate) {
+            btn.classList.add('active');
+        }
+    });
     
     // Riproduci subito per far sentire la differenza
     if(currentCard) speak(currentCard.a); 
@@ -382,6 +388,7 @@ function startStudy(moduleName) {
     currentList = library[moduleName];
     studyIndex = 0;
     isStudyMode = true;
+    isDictationMode = false;
 
     // Gestione UI
     dashboardPanel.classList.add('hidden');
