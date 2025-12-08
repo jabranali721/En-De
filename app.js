@@ -318,8 +318,9 @@ function initGame(moduleKey, mode) {
     const theoryText = document.getElementById('theory-text');
     const startBtn = document.getElementById('start-game-btn');
 
-    // Se il modulo ha teoria E siamo all'inizio
-    if (module.theory && mode !== 'DICTATION') { // Magari nel dettato no
+    // Se il modulo ha teoria, mostrala prima di iniziare
+    // (eccetto in modalità DICTATION dove l'audio è più importante)
+    if (module.theory && mode !== 'DICTATION') {
         theoryText.textContent = module.theory;
         modal.classList.remove('hidden'); // Mostra popup
         
