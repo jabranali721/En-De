@@ -17,7 +17,7 @@ This is a modular German language learning web application that helps users lear
 ### Single-Page Application Structure
 The app consists of three main files:
 - `index.html` - Main HTML structure with panels for setup, dashboard, and game
-- `app.js` - All application logic (~900 lines)
+- `app.js` - All application logic
 - `style.css` - Monkeytype-inspired styling with CSS Grid
 
 ### Key Concepts
@@ -144,7 +144,7 @@ The app uses:
 - localStorage for data persistence
 - ES6+ JavaScript features
 
-Minimum browser versions: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
+Supported browsers: Recent versions of Chrome, Firefox, Safari, and Edge
 
 ## Known Limitations
 
