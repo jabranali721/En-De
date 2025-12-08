@@ -271,14 +271,24 @@ function displayQuizOptions() {
         { text: currentCard.wrong2, isCorrect: false }
     ];
     
+    // Filter out duplicates - keep the correct answer if there's a duplicate
+    const uniqueOptions = [];
+    const seen = new Set();
+    options.forEach(option => {
+        if (!seen.has(option.text)) {
+            seen.add(option.text);
+            uniqueOptions.push(option);
+        }
+    });
+    
     // Shuffle options using Fisher-Yates algorithm
-    for (let i = options.length - 1; i > 0; i--) {
+    for (let i = uniqueOptions.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [options[i], options[j]] = [options[j], options[i]];
+        [uniqueOptions[i], uniqueOptions[j]] = [uniqueOptions[j], uniqueOptions[i]];
     }
     
     // Create buttons for each option
-    options.forEach(option => {
+    uniqueOptions.forEach(option => {
         const btn = document.createElement('button');
         btn.className = 'quiz-option-btn';
         btn.textContent = option.text;
