@@ -88,6 +88,20 @@ input[type="file"] { display: none; }
     background: #3a3c3f;
 }
 
+/* Sub-buttons for study and dictation modes */
+.module-sub-btn {
+    width: 50px;
+    padding: 0;
+    justify-content: center;
+    border-left: 1px solid var(--sub-color);
+}
+
+/* Word count display in module cards */
+.word-count {
+    font-size: 0.8em;
+    opacity: 0.6;
+}
+
 /* 3. TYPING AREA (Il cuore) */
 .typing-area {
     display: flex;

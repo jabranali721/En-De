@@ -245,7 +245,7 @@ function showDashboard() {
         // Es: "05 Casa e Mobili" diventa "Casa e Mobili"
         const cleanName = mod.name.replace(/^\d+[\s_]/, '').replace(/_/g, ' ');
 
-        btnMain.innerHTML = `<span>${icon} ${cleanName}</span> <span style="font-size:0.8em; opacity:0.6">${mod.data.length} parole</span>`;
+        btnMain.innerHTML = `<span>${icon} ${cleanName}</span> <span class="word-count">${mod.data.length} parole</span>`;
         
         // Assegnazione Azione click
         if (mod.type === 'QUIZ') btnMain.onclick = () => initGame(key, 'QUIZ');
@@ -258,14 +258,6 @@ function showDashboard() {
         if (mod.type === 'NORMAL') {
             const btnStudy = createSubButton('📖', () => initStudy(key));
             const btnDict = createSubButton('🎧', () => initGame(key, 'DICTATION'));
-            
-            // Stile specifico per i bottoni piccoli laterali
-            [btnStudy, btnDict].forEach(btn => {
-                btn.style.width = "50px"; // Quadrati
-                btn.style.padding = "0";
-                btn.style.justifyContent = "center";
-                btn.style.borderLeft = "1px solid var(--sub-color)"; // Reset bordo
-            });
 
             wrapper.appendChild(btnStudy);
             wrapper.appendChild(btnDict);
@@ -277,8 +269,7 @@ function showDashboard() {
 
 function createSubButton(text, onClick) {
     const btn = document.createElement('button');
-    btn.className = 'module-card';
-    btn.style.borderLeft = "2px solid #555";
+    btn.className = 'module-card module-sub-btn';
     btn.innerHTML = text;
     btn.onclick = onClick;
     return btn;
