@@ -73,9 +73,14 @@ function showDashboard() {
     document.getElementById('study-panel').classList.add('hidden');
     dashboardPanel.classList.remove('hidden');
     
+    // Reset mode flags
+    isDictationMode = false;
+    isStudyMode = false;
+    
     // Nascondi XP bar e ripristina titolo
     document.getElementById('xp-bar-container').classList.add('hidden');
     document.getElementById('current-mode').textContent = 'Select Mode';
+    document.getElementById('speed-controls').classList.add('hidden');
 
     modulesGrid.innerHTML = '';
     
@@ -161,7 +166,8 @@ function nextCard() {
     if (isDictationMode) {
         // --- MODALITÀ DETTATO ---
         questionText.textContent = "🎧 Ascolta..."; 
-        questionText.style.color = "#666"; // Grigio scuro
+        questionText.style.color = "var(--sub-color)";
+        questionText.style.opacity = "0.5";
         
         // Parla automaticamente dopo un breve ritardo (per dare tempo di resettare)
         setTimeout(() => speak(currentCard.a), 500);
@@ -170,6 +176,7 @@ function nextCard() {
         // --- MODALITÀ CLASSICA ---
         questionText.textContent = currentCard.q; // Mostra Italiano
         questionText.style.color = "var(--sub-color)";
+        questionText.style.opacity = "1";
         // In modalità classica NON parliamo all'inizio, solo alla fine
     }
     
@@ -364,10 +371,9 @@ function setSpeed(rate) {
     currentSpeed = rate;
     
     // Aggiorna UI bottoni
-    document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
-    // Find the button that was clicked by matching the rate
     document.querySelectorAll('.speed-btn').forEach(btn => {
-        const btnRate = parseFloat(btn.getAttribute('onclick').match(/\d+\.?\d*/)[0]);
+        btn.classList.remove('active');
+        const btnRate = parseFloat(btn.getAttribute('data-rate'));
         if (btnRate === rate) {
             btn.classList.add('active');
         }
