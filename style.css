@@ -384,3 +384,35 @@ input[type="file"] { display: none; }
     transform: scale(0.98);
     box-shadow: 0 0 15px var(--main-color);
 }
+
+/* ACTIVE STUDY MODE INPUT */
+.study-input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid var(--sub-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.2rem;
+    padding: 10px;
+    margin-top: 20px;
+    width: 80%;
+    text-align: center;
+    outline: none;
+    transition: all 0.3s;
+}
+
+.study-input:focus {
+    border-color: var(--main-color);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.study-input.correct {
+    border-color: #2ecc71; /* Verde */
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+}
+
+/* Nascondi l'input quando la carta non è rivelata */
+.hidden-content .study-input {
+    display: none;
+}
