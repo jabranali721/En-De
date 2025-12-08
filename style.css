@@ -190,3 +190,76 @@ input[type="file"] { display: none; }
     width: 0%; 
     transition: width 0.3s ease; 
 }
+
+/* STUDY MODE LAYOUT */
+.flashcard-container {
+    background: #2c2e31; /* Leggermente più chiaro dello sfondo */
+    padding: 40px;
+    border-radius: 10px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    border: 1px solid #444;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.label-tiny {
+    font-size: 0.7rem;
+    color: var(--sub-color);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.card-top h2 {
+    color: var(--text-color);
+    margin: 0 0 20px 0;
+    font-weight: normal;
+}
+
+.divider {
+    height: 1px;
+    background: #444;
+    width: 50%;
+    margin: 20px auto;
+}
+
+.card-bottom h1 {
+    color: var(--main-color);
+    font-size: 2.5rem;
+    margin: 0;
+}
+
+/* Effetto Blur per nascondere la risposta */
+.hidden-content {
+    filter: blur(8px); /* Sfoca il testo */
+    opacity: 0.4;
+    pointer-events: none;
+    user-select: none;
+}
+.reveal {
+    filter: blur(0);
+    opacity: 1;
+    transition: all 0.3s ease-in;
+}
+
+.study-controls {
+    margin-top: 30px;
+    color: var(--sub-color);
+    font-size: 0.8rem;
+    text-align: center;
+}
+.study-controls code {
+    background: #444;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #fff;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.pronunciation-icon {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--sub-color);
+}
