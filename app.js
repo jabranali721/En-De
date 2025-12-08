@@ -383,8 +383,11 @@ function renderQuizButtons() {
     DOM.game.quizContainer.innerHTML = '';
     const opts = [...APP_STATE.currentCard.options];
     
-    // Mescola opzioni
-    opts.sort(() => Math.random() - 0.5);
+    // Mescola opzioni con Fisher-Yates shuffle
+    for (let i = opts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [opts[i], opts[j]] = [opts[j], opts[i]];
+    }
 
     opts.forEach(opt => {
         const btn = document.createElement('button');
@@ -430,10 +433,10 @@ function checkInputAnswer() {
     // LOGICA SPECIALE PER STORY (Cattura variabili)
     if (APP_STATE.currentMode === 'STORY' && hasVariablePlaceholders(correctVal)) {
         // 1. Prepara la regex dalla risposta attesa
-        // Es: "Ich heiße {nome}" -> regex: /^Ich heiße (.+)$/i
+        // Es: "Ich heiße {nome}" -> regex: /^Ich heiße ([\\w\\s'-]{1,50})$/i
         let regexStr = "^" + correctVal
             .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // Escape caratteri speciali
-            .replace(/\\{(\w+)\\}/g, '(.+)') + "$";  // {var} -> (.+)
+            .replace(/\\{(\w+)\\}/g, VARIABLE_CAPTURE_PATTERN) + "$";  // {var} -> pattern sicuro
         
         const regex = new RegExp(regexStr, 'i');
         const match = userVal.match(regex);
@@ -465,7 +468,7 @@ function checkInputAnswer() {
 
     if (isCorrect) {
         feedbackSuccess(APP_STATE.currentMode === 'STORY' ? '✅ Continua così!' : '✅ Esatto!');
-        speak(APP_STATE.currentCard.a.replace(/{(\w+)}/g, (m, v) => APP_STATE.storyVars[v] || "")); 
+        speak(APP_STATE.currentCard.a.replace(/{(\w+)}/g, (match, varName) => APP_STATE.storyVars[varName] || "")); 
         handleSuccessLogic();
     } else {
         // Sostituisci variabili nel messaggio di errore per far capire cosa si aspettava
