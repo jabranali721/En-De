@@ -7,6 +7,8 @@ let sessionTotalGoal = 10;   // Obiettivo: fare 10 parole giuste per finire il "
 let hintIndex = 0; // Variabile globale per tracciare quanti aiuti usati
 let studyIndex = 0;
 let isStudyMode = false;
+let isDictationMode = false;
+let currentSpeed = 1.0; // Velocità di default
 
 // Elementi DOM
 const folderInput = document.getElementById('folderInput');
@@ -95,8 +97,16 @@ function showDashboard() {
         btnStudy.innerHTML = `📖 STUDY`;
         btnStudy.onclick = () => startStudy(moduleName);
 
+        // Bottone Dettato (Icona Cuffie)
+        const btnDictation = document.createElement('button');
+        btnDictation.className = 'module-card';
+        btnDictation.style.borderLeft = "2px solid #555"; 
+        btnDictation.innerHTML = `🎧 DICTATION`;
+        btnDictation.onclick = () => startDictation(moduleName);
+
         wrapper.appendChild(btnPlay);
         wrapper.appendChild(btnStudy);
+        wrapper.appendChild(btnDictation);
         modulesGrid.appendChild(wrapper);
     });
 }
@@ -104,12 +114,17 @@ function showDashboard() {
 // --- 3. GIOCO ---
 function startGame(moduleName) {
     currentList = library[moduleName];
+    isDictationMode = false;
+    isStudyMode = false;
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
     
     // AGGIUNTA: Aggiorna il titolo nella navbar e mostra XP bar
     document.getElementById('current-mode').textContent = moduleName; 
     document.getElementById('xp-bar-container').classList.remove('hidden');
+    
+    // Nascondi controlli velocità in modalità normale
+    document.getElementById('speed-controls').classList.add('hidden');
     
     // Inizializza sessione
     sessionCorrectCount = 0;
@@ -141,8 +156,22 @@ function nextCard() {
         return !stat || stat.level < 3;
     }) || shuffled[0]; // Altrimenti prendine una a caso
 
-    // Aggiorna UI
-    document.getElementById('question-text').textContent = currentCard.q;
+    const questionText = document.getElementById('question-text');
+
+    if (isDictationMode) {
+        // --- MODALITÀ DETTATO ---
+        questionText.textContent = "🎧 Ascolta..."; 
+        questionText.style.color = "#666"; // Grigio scuro
+        
+        // Parla automaticamente dopo un breve ritardo (per dare tempo di resettare)
+        setTimeout(() => speak(currentCard.a), 500);
+        
+    } else {
+        // --- MODALITÀ CLASSICA ---
+        questionText.textContent = currentCard.q; // Mostra Italiano
+        questionText.style.color = "var(--sub-color)";
+        // In modalità classica NON parliamo all'inizio, solo alla fine
+    }
     
     input.focus();
 }
@@ -165,8 +194,16 @@ function checkAnswer() {
 
     if (userVal === correctVal) {
         // --- CASO CORRETTO ---
+        let msg = `✅ Esatto!`;
+        
+        // Se eravamo in dettato, mostriamo ora la traduzione italiana
+        if(isDictationMode) {
+            msg += ` <span style="color:#aaa; font-size:0.8em">(${currentCard.q})</span>`;
+        }
+        
         const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-        feedback.innerHTML = `✅ Esatto! <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+        feedback.innerHTML = msg;
         feedback.className = 'success';
         
         // Flash verde
@@ -197,14 +234,18 @@ function checkAnswer() {
         setTimeout(() => input.classList.remove('shake'), 300);
         
         // Mostriamo errore MA con opzione di "Recupero"
+        let msg = `❌ No! Era: <b>${currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;')}</b>`;
+        
+        if(isDictationMode) {
+             msg += ` <br><span style="color:#aaa">Traduzione: ${currentCard.q}</span>`;
+        }
+        
         const escapedAnswer = currentCard.a.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-        const displayAnswer = currentCard.a.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        feedback.innerHTML = `
-            ❌ No! Era: <b>${displayAnswer}</b> 
-            <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
+        msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
             <br>
-            <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>
-        `;
+            <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
+        
+        feedback.innerHTML = msg;
         feedback.className = 'error';
         
         // Parla anche se sbagli, così impari la pronuncia
@@ -252,7 +293,7 @@ function speak(text) {
     
     const msg = new SpeechSynthesisUtterance(text);
     msg.lang = 'de-DE'; // Imposta lingua tedesca
-    msg.rate = 0.9;     // Velocità leggermente ridotta per chiarezza
+    msg.rate = currentSpeed; // USA LA VELOCITÀ VARIABILE
     
     window.speechSynthesis.speak(msg);
 }
@@ -295,6 +336,45 @@ document.getElementById('answer-input').addEventListener('keydown', function(e) 
         showHint();
     }
 });
+
+// --- DICTATION MODE FUNCTIONS ---
+
+function startDictation(moduleName) {
+    currentList = library[moduleName];
+    isDictationMode = true;
+    isStudyMode = false;
+    
+    // UI Setup
+    dashboardPanel.classList.add('hidden');
+    gamePanel.classList.remove('hidden');
+    document.getElementById('xp-bar-container').classList.remove('hidden');
+    document.getElementById('current-mode').textContent = moduleName + " (Dictation)";
+    
+    // Mostra controlli velocità
+    document.getElementById('speed-controls').classList.remove('hidden');
+    
+    // Inizializza sessione
+    sessionCorrectCount = 0;
+    updateProgressBar();
+    
+    nextCard();
+}
+
+function setSpeed(rate) {
+    currentSpeed = rate;
+    
+    // Aggiorna UI bottoni
+    document.querySelectorAll('.speed-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Riproduci subito per far sentire la differenza
+    if(currentCard) speak(currentCard.a); 
+}
+
+function replayAudio() {
+    if(currentCard) speak(currentCard.a);
+    document.getElementById('answer-input').focus();
+}
 
 // --- LOGICA STUDY MODE ---
 
