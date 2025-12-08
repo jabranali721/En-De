@@ -440,3 +440,51 @@ input[type="file"] { display: none; }
 .hidden-content .study-input {
     display: none;
 }
+
+/* MODAL STYLES */
+.modal {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: rgba(0,0,0,0.85); /* Sfondo scuro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #2c2e31;
+    padding: 40px;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    border: 1px solid var(--main-color);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.theory-body {
+    margin: 20px 0;
+    line-height: 1.6;
+    color: var(--text-color);
+    white-space: pre-wrap; /* Mantiene gli a capo del CSV */
+    max-height: 60vh;
+    overflow-y: auto; /* Scroll se il testo è lungo */
+    font-size: 1.1rem;
+}
+
+/* NOTE GRAMMATICALI IN GIOCO */
+.grammar-note {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #888;
+    font-style: italic;
+    background: rgba(255,255,255,0.05);
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-left: 3px solid var(--main-color);
+}
