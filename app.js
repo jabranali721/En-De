@@ -31,6 +31,10 @@ const homeBtn = document.getElementById('home-btn');
 // Regex pattern per catturare variabili: supporta parole, spazi, apostrofi e trattini
 // Limitato a 50 caratteri per prevenire problemi di performance e ReDoS
 const VARIABLE_CAPTURE_PATTERN = '([\\w\\s\'-]{1,50})';
+// Regex per trovare placeholder di variabili nel formato {variableName}
+const VARIABLE_PLACEHOLDER_REGEX = /\{(\w+)\}/g;
+// Carattere iniziale dei placeholder
+const VARIABLE_PLACEHOLDER_START = '{';
 
 // --- HELPER FUNCTIONS ---
 /**
@@ -68,6 +72,45 @@ function buildVariableCaptureRegex(targetString) {
         .replace(/\\\{(\w+)\\\}/g, VARIABLE_CAPTURE_PATTERN)
         + "$";
     return new RegExp(regexString, 'i');
+}
+
+/**
+ * Checks if a text contains variable placeholders
+ * @param {string} text - Text to check
+ * @returns {boolean} - True if text contains {variable} placeholders
+ */
+function hasVariablePlaceholders(text) {
+    return text.includes(VARIABLE_PLACEHOLDER_START);
+}
+
+/**
+ * Escapes text for safe use in HTML/onclick attributes
+ * @param {string} text - Text to escape
+ * @returns {string} - Escaped text
+ */
+function escapeForHtml(text) {
+    return text.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+/**
+ * Capitalizes user input with smart multi-word handling
+ * @param {string} value - User input to capitalize
+ * @returns {string} - Capitalized value
+ */
+function capitalizeUserInput(value) {
+    const trimmed = value.trim();
+    
+    // Don't capitalize numbers
+    if (/^\d+$/.test(trimmed)) {
+        return trimmed;
+    }
+    
+    // Capitalize each word, filter out empty strings from extra spaces
+    return trimmed
+        .split(' ')
+        .filter(word => word.length > 0)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
 }
 
 // --- 1. CARICAMENTO CARTELLA ---
@@ -203,12 +246,13 @@ function startGame(moduleName) {
     isStudyMode = false;
     isQuizMode = false;
     
-    // Reset variabili quando inizi una nuova storia
+    // Reset story session: pulisce variabili catturate e indice
+    // Questo permette di ripartire da zero ogni volta che si avvia una storia
     storyVariables = {};
+    storyIndex = 0;
     
     // Se il file inizia con STORY, attiviamo la modalità storia
     isStoryMode = moduleName.startsWith("STORY");
-    storyIndex = 0; // Reset indice storia
     
     dashboardPanel.classList.add('hidden');
     gamePanel.classList.remove('hidden');
@@ -463,14 +507,14 @@ function checkAnswer() {
     userStats[currentCard.q].tries++;
 
     // Logica speciale per Story Mode con variabili
-    if (isStoryMode && targetAnswer.includes('{')) {
+    if (isStoryMode && hasVariablePlaceholders(targetAnswer)) {
         // CREAZIONE REGEX DINAMICA per catturare variabili
-        const variablePattern = /\{(\w+)\}/g;
         let varsToCapture = [];
         
         // Troviamo tutte le variabili da catturare in questa frase
         let match;
-        while ((match = variablePattern.exec(targetAnswer)) !== null) {
+        const placeholderRegex = new RegExp(VARIABLE_PLACEHOLDER_REGEX);
+        while ((match = placeholderRegex.exec(targetAnswer)) !== null) {
             varsToCapture.push(match[1]); // Salva il nome della variabile (es. "nome")
         }
         
@@ -497,25 +541,14 @@ function checkAnswer() {
             if (varsToCapture.length > 0 && userMatch.length > 1) {
                 varsToCapture.forEach((varName, index) => {
                     // userMatch[0] è tutta la frase, userMatch[1] è la prima cattura
-                    let capturedValue = userMatch[index + 1].trim();
-                    
-                    // Capitalizziamo solo se sembra un nome (non numeri)
-                    // Per nomi multi-parola, capitalizza ogni parola (es. "jean pierre" -> "Jean Pierre")
-                    if (capturedValue.length > 0 && !/^\d+$/.test(capturedValue)) {
-                        capturedValue = capturedValue
-                            .split(' ')
-                            .filter(word => word.length > 0) // Rimuovi stringhe vuote da spazi multipli
-                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                            .join(' ');
-                    }
-                    
-                    storyVariables[varName] = capturedValue;
+                    const capturedValue = userMatch[index + 1];
+                    storyVariables[varName] = capitalizeUserInput(capturedValue);
                 });
             }
 
             // Feedback positivo
             let msg = `✅ Esatto!`;
-            const escapedAnswer = userVal.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const escapedAnswer = escapeForHtml(userVal);
             msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
             feedback.innerHTML = msg;
             feedback.className = 'success';
@@ -549,19 +582,18 @@ function checkAnswer() {
             
             // Se c'è una variabile, mostriamo all'utente cosa ci aspettavamo come struttura
             // Genera hint dinamico basato sui nomi delle variabili
-            let hintMsg = targetAnswer.replace(/\{(\w+)\}/g, (match, varName) => {
-                // Capitalizza il nome della variabile per il hint
-                const capitalizedVar = varName.charAt(0).toUpperCase() + varName.slice(1);
+            const hintMsg = targetAnswer.replace(VARIABLE_PLACEHOLDER_REGEX, (match, varName) => {
+                const capitalizedVar = capitalizeUserInput(varName);
                 return `[${capitalizedVar}]`;
             });
             
             // Per l'audio, sostituiamo le variabili conosciute così non parliamo i placeholder
-            let answerForSpeech = substituteStoryVariables(targetAnswer, storyVariables);
+            const answerForSpeech = substituteStoryVariables(targetAnswer, storyVariables);
             
             let msg = `❌ Riprova. Struttura attesa: <b>${hintMsg}</b>`;
             // Solo aggiungi il pulsante audio se non ci sono ancora placeholder non risolti
-            if (!answerForSpeech.includes('{')) {
-                const escapedAnswer = answerForSpeech.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            if (!hasVariablePlaceholders(answerForSpeech)) {
+                const escapedAnswer = escapeForHtml(answerForSpeech);
                 msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
             }
             msg += `
