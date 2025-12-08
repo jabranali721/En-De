@@ -409,7 +409,7 @@ function handleQuizAnswer(btn, val) {
     // Se la domanda contiene i trattini "___", li sostituiamo con la risposta corretta
     // per leggere la frase completa. Altrimenti leggiamo solo la risposta.
     let textToSpeak = correct;
-    if (question.includes('___')) {
+    if (/_+/.test(question)) {
         // Sostituisce i trattini (o underscore) con la parola corretta
         textToSpeak = question.replace(/_+/g, correct);
     }
@@ -729,15 +729,23 @@ document.addEventListener('keydown', (e) => {
     if (APP_STATE.currentMode === 'QUIZ' && !DOM.game.quizContainer.classList.contains('hidden')) {
         const buttons = DOM.game.quizContainer.querySelectorAll('button');
         
+        // Verifica che sia un tasto numerico valido (1, 2, 3)
+        if (!/^[1-3]$/.test(e.key)) return;
+        
         // Mappa i tasti 1, 2, 3 agli indici dell'array 0, 1, 2
-        const index = parseInt(e.key) - 1;
+        const index = parseInt(e.key, 10) - 1;
 
         if (index >= 0 && index < buttons.length && !buttons[index].disabled) {
             // Simula il click sul bottone corrispondente
             buttons[index].click();
             
             // Aggiunge un piccolo feedback visivo di "pressione"
-            buttons[index].classList.add('active-key'); 
+            buttons[index].classList.add('active-key');
+            
+            // Rimuove il feedback dopo un breve momento
+            setTimeout(() => {
+                buttons[index].classList.remove('active-key');
+            }, 200);
         }
     }
 });
