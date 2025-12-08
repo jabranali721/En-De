@@ -1,6 +1,28 @@
-# 🇩🇪 Modular Deutsch
+# 🇩🇪 Modular Deutsch - Apprendimento "Bite Size" per Italofoni
 
-Un'app per imparare il tedesco in modo modulare, caricando intere cartelle di file CSV.
+Un'app web completa per imparare il tedesco in modo modulare e strutturato, seguendo il Quadro Comune Europeo di Riferimento (CEFR, A1-C2). Progettata specificamente per studenti italofoni con focus su analisi contrastiva tedesco-italiano.
+
+## 🎯 Caratteristiche Principali
+
+✨ **Percorso Completo A1-C2**: Oltre 50 moduli organizzati per livello CEFR  
+🎨 **Color Coding per Genere**: Sistema visivo 🔵 Der / 🔴 Die / 🟡 Das  
+⚠️ **Alert Falsi Amici**: Avvisi per trappole linguistiche comuni italofoni  
+🎧 **Audio Comparativo**: Pronuncia tedesca con velocità regolabile  
+🎮 **Multiple Modalità**: Normale, Dettato, Quiz, Storia, Studio  
+📊 **Gamification**: Sistema XP, livelli, ripetizione spaziata  
+📚 **Teoria Integrata**: Spiegazioni grammaticali contestuali  
+
+## 🗺️ Roadmap Curricolare
+
+📖 **[Vedi Roadmap Completa](ROADMAP_TEDESCO_ITALIANI.md)** - Documento curricolare dettagliato
+
+### Livelli Disponibili:
+- 🟢 **A1**: 16 moduli - Fonetica, Pronomi, Verbi Base, Sintassi V2, Falsi Amici
+- 🟢 **A2**: 7 moduli - Perfekt, Dativo, Verbi Modali, Preposizioni
+- 🟡 **B1**: 6 moduli - Subordinate, Preposizioni Temporali, Declinazione Aggettivi
+- 🟠 **B2**: 6 moduli - Passivo, Rektion Verbale, Konjunktiv II
+- 🔴 **C1**: 5 moduli - Nominalstil, Funktionsverbgefüge, Konjunktiv I
+- 🔴 **C2**: 5 moduli - Particelle Modali, Idiomi Avanzati
 
 ## Come Funziona
 
@@ -46,11 +68,40 @@ Vedrai una dashboard con tutti i moduli disponibili. Ogni bottone mostra:
 
 ## Funzionalità
 
-✅ **Caricamento Cartella**: Carica tutti i CSV di una cartella in un colpo solo  
-✅ **Dashboard Moduli**: Scegli cosa studiare oggi  
-✅ **Statistiche Globali**: Le parole memorizzate in un modulo rimangono memorizzate negli altri  
-✅ **Algoritmo Intelligente**: Priorità alle parole nuove o con livello basso  
-✅ **Persistenza**: I progressi vengono salvati nel browser (localStorage)
+### 🎓 Apprendimento
+✅ **Micro-Learning**: Sessioni brevi 5-10 minuti per concetto  
+✅ **Analisi Contrastiva**: Focus su difficoltà specifiche per italofoni  
+✅ **Ripetizione Spaziata**: Algoritmo intelligente (livello 0-5)  
+✅ **Teoria Integrata**: Popup esplicativo prima di ogni modulo
+
+### 🎨 Interfaccia
+✅ **Color Coding Genere**: Articoli colorati automaticamente (Der=blu, Die=rosso, Das=giallo)  
+✅ **Badge Livello**: Indicatori visivi A1-C2 per ogni modulo  
+✅ **Dashboard Modulare**: Tutti i moduli organizzati per livello  
+✅ **Feedback Immediato**: Correzione istantanea con note grammaticali
+
+### 🎮 Modalità di Studio
+✅ **Normale**: Traduci dall'italiano al tedesco  
+✅ **Dettato** 🎧: Ascolta e scrivi  
+✅ **Quiz** 🧩: Scelta multipla  
+✅ **Storia** 📜: Dialoghi interattivi con variabili dinamiche  
+✅ **Studio** 📖: Flashcard visuali con reveal
+
+### 🔊 Audio
+✅ **Sintesi Vocale**: Pronuncia tedesca automatica (TTS)  
+✅ **Controllo Velocità**: Lento / Normale / Veloce  
+✅ **Replay Illimitato**: Riascolta quando vuoi
+
+### 📊 Progressione
+✅ **Sistema XP**: Guadagna esperienza ad ogni risposta corretta  
+✅ **Rank System**: Sali di livello (Rank = XP/100)  
+✅ **Statistiche Globali**: Progresso condiviso tra tutti i moduli  
+✅ **Persistenza**: Salvataggio automatico in localStorage
+
+### ⚠️ Sicurezza Linguistica
+✅ **Alert Falsi Amici**: Evidenziazione parole trappola  
+✅ **Note Contestuali**: Spiegazioni grammaticali inline  
+✅ **Hint Progressivi**: Suggerimenti se necessario
 
 ## Tecnologie
 
