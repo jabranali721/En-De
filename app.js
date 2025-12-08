@@ -250,8 +250,11 @@ function nextCard() {
     // Gestione modalità Storia: ordine sequenziale
     if (isStoryMode) {
         if (storyIndex >= currentList.length) {
-            alert("Storia finita! Ottimo lavoro.");
-            showDashboard();
+            // Storia completata: mostra messaggio di successo e torna alla dashboard
+            const feedback = document.getElementById('feedback');
+            feedback.innerHTML = '🎉 Storia finita! Ottimo lavoro.';
+            feedback.className = 'success';
+            setTimeout(showDashboard, 2000);
             return;
         }
         currentCard = currentList[storyIndex];
@@ -489,9 +492,12 @@ function checkAnswer() {
                     let capturedValue = userMatch[index + 1].trim();
                     
                     // Capitalizziamo solo se sembra un nome (non numeri)
-                    // Safety check: verifica che la stringa non sia vuota e non sia solo numeri
+                    // Per nomi multi-parola, capitalizza ogni parola (es. "jean pierre" -> "Jean Pierre")
                     if (capturedValue.length > 0 && !/^\d+$/.test(capturedValue)) {
-                        capturedValue = capturedValue.charAt(0).toUpperCase() + capturedValue.slice(1);
+                        capturedValue = capturedValue
+                            .split(' ')
+                            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(' ');
                     }
                     
                     storyVariables[varName] = capturedValue;
@@ -544,8 +550,12 @@ function checkAnswer() {
             let answerForSpeech = substituteStoryVariables(targetAnswer, storyVariables);
             
             let msg = `❌ Riprova. Struttura attesa: <b>${hintMsg}</b>`;
-            const escapedAnswer = answerForSpeech.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
-            msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
+            // Solo aggiungi il pulsante audio se non ci sono ancora placeholder non risolti
+            if (!answerForSpeech.includes('{')) {
+                const escapedAnswer = answerForSpeech.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+                msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>`;
+            }
+            msg += `
                 <br>
                 <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
             
