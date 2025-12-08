@@ -27,6 +27,10 @@ const setupPanel = document.getElementById('setup-panel');
 const modulesGrid = document.getElementById('modules-grid');
 const homeBtn = document.getElementById('home-btn');
 
+// --- CONSTANTS ---
+// Regex pattern per catturare variabili: supporta parole, spazi, apostrofi e trattini
+const VARIABLE_CAPTURE_PATTERN = '([\\w\\s\'-]+)';
+
 // --- HELPER FUNCTIONS ---
 /**
  * Escapes special regex characters in a string
@@ -468,9 +472,8 @@ function checkAnswer() {
         // Trasformiamo la frase target in una Regex
         // Es: "Ich heiße {nome}" diventa "^Ich heiße ([\\w\\s'-]+)$"
         // Es: "Ich komme aus {citta}" diventa "^Ich komme aus ([\\w\\s'-]+)$"
-        // Pattern [\w\s'-]+ cattura parole, spazi, apostrofi e trattini (per nomi composti come "Jean-Pierre")
         let regexString = "^" + escapeRegexSpecialChars(regexTarget)
-            .replace(/\\\{(\w+)\\\}/g, '([\\w\\s\'-]+)') // Trasforma {var} in cattura che include nomi composti
+            .replace(/\\\{(\w+)\\\}/g, VARIABLE_CAPTURE_PATTERN) // Trasforma {var} in cattura
             + "$";
         
         const regex = new RegExp(regexString, 'i'); // 'i' per case-insensitive
@@ -492,7 +495,6 @@ function checkAnswer() {
                     }
                     
                     storyVariables[varName] = capturedValue;
-                    console.log(`Variabile catturata: ${varName} = ${capturedValue}`);
                 });
             }
 
@@ -538,8 +540,11 @@ function checkAnswer() {
                 return `[${capitalizedVar}]`;
             });
             
+            // Per l'audio, sostituiamo le variabili conosciute così non parliamo i placeholder
+            let answerForSpeech = substituteStoryVariables(targetAnswer, storyVariables);
+            
             let msg = `❌ Riprova. Struttura attesa: <b>${hintMsg}</b>`;
-            const escapedAnswer = targetAnswer.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
+            const escapedAnswer = answerForSpeech.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
             msg += ` <button class="audio-btn" onclick="speak('${escapedAnswer}')">🔊</button>
                 <br>
                 <button id="override-btn" class="override-btn">Wait, I was right (Typo)</button>`;
