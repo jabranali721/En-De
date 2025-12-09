@@ -462,7 +462,7 @@ function nextCard() {
         }
         
         // Filtra le carte recenti per evitare ripetizioni immediate
-        // Mantieni fino a 5 carte recenti o il 30% della lista, quale è maggiore
+        // Mantieni un massimo di 5 carte recenti O il 30% della lista (prende il valore maggiore)
         const maxRecent = Math.max(5, Math.floor(APP_STATE.currentList.length * 0.3));
         
         // Trova una carta con livello < 3 che NON sia stata mostrata recentemente
@@ -479,10 +479,11 @@ function nextCard() {
             APP_STATE.currentCard = shuffled.find(c => !APP_STATE.recentCards.includes(c.q));
         }
         
-        // Se tutte le carte sono recenti (lista molto piccola), prendi la prima shuffled
+        // Se tutte le carte sono recenti (lista molto piccola), rimuovi le più vecchie
         if (!APP_STATE.currentCard) {
             APP_STATE.currentCard = shuffled[0];
-            APP_STATE.recentCards = []; // Reset recenti se siamo costretti
+            // Mantieni solo l'ultima carta per evitare ripetizione immediata
+            APP_STATE.recentCards = APP_STATE.recentCards.slice(-1);
         }
         
         // Aggiungi la carta corrente alla lista recenti
