@@ -178,6 +178,22 @@ input[type="file"] { display: none; }
 
 /* Pulsanti ausiliari */
 .controls { margin-top: 50px; }
+
+.keyboard-hints {
+    color: var(--sub-color);
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.keyboard-hints code {
+    background: #444;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--text-color);
+    margin: 0 2px;
+}
+
 .text-btn {
     background: none; border: none;
     color: var(--sub-color);

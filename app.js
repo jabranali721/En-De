@@ -17,7 +17,8 @@ const APP_STATE = {
     sessionCorrect: 0,
     sessionGoal: 10,
     speed: 1.0,
-    isAnswerRevealed: false // Flag per tracciare se la risposta è stata rivelata in study mode
+    isAnswerRevealed: false, // Flag per tracciare se la risposta è stata rivelata in study mode
+    recentCards: []        // Track recently shown cards to avoid immediate repetition
 };
 
 // --- ELEMENTI DOM (Cache) ---
@@ -35,7 +36,8 @@ const DOM = {
         feedback: document.getElementById('feedback'),
         checkBtn: document.getElementById('check-btn'),
         speedControls: document.getElementById('speed-controls'),
-        virtualKeyboard: document.querySelector('.german-keyboard')
+        virtualKeyboard: document.querySelector('.german-keyboard'),
+        keyboardHints: document.getElementById('keyboard-hints')
     },
     nav: {
         modeLabel: document.getElementById('current-mode'),
@@ -349,6 +351,7 @@ function initGame(moduleKey, mode) {
     APP_STATE.currentList = module.data;
     APP_STATE.currentMode = mode;
     APP_STATE.sessionCorrect = 0;
+    APP_STATE.recentCards = []; // Reset recent cards to avoid repetition
     
     // Setup UI base
     DOM.nav.modeLabel.textContent = `${module.name} (${mode})`;
@@ -397,15 +400,24 @@ function updateGameUI(mode) {
     DOM.game.quizContainer.classList.add('hidden');
     DOM.game.speedControls.classList.add('hidden');
     if(DOM.game.virtualKeyboard) DOM.game.virtualKeyboard.classList.add('hidden');
+    if(DOM.game.keyboardHints) DOM.game.keyboardHints.classList.add('hidden');
 
     // Mostra solo ciò che serve
     if (mode === 'QUIZ') {
         DOM.game.quizContainer.classList.remove('hidden');
+        if(DOM.game.keyboardHints) {
+            DOM.game.keyboardHints.innerHTML = '<code>1</code> <code>2</code> <code>3</code> per selezionare / <code>TAB</code> Hint';
+            DOM.game.keyboardHints.classList.remove('hidden');
+        }
     } 
     else if (mode === 'NORMAL' || mode === 'STORY') {
         DOM.game.input.classList.remove('hidden');
         DOM.game.checkBtn.classList.remove('hidden');
         if(DOM.game.virtualKeyboard) DOM.game.virtualKeyboard.classList.remove('hidden');
+        if(DOM.game.keyboardHints) {
+            DOM.game.keyboardHints.innerHTML = '<code>INVIO</code> Conferma / <code>TAB</code> Hint / Usa i tasti per ä ö ü ß';
+            DOM.game.keyboardHints.classList.remove('hidden');
+        }
         DOM.game.input.focus();
     }
     else if (mode === 'DICTATION') {
@@ -413,6 +425,10 @@ function updateGameUI(mode) {
         DOM.game.checkBtn.classList.remove('hidden');
         DOM.game.speedControls.classList.remove('hidden');
         if(DOM.game.virtualKeyboard) DOM.game.virtualKeyboard.classList.remove('hidden');
+        if(DOM.game.keyboardHints) {
+            DOM.game.keyboardHints.innerHTML = '<code>INVIO</code> Conferma / <code>TAB</code> Hint / Usa i tasti per ä ö ü ß';
+            DOM.game.keyboardHints.classList.remove('hidden');
+        }
         DOM.game.input.focus();
     }
 }
@@ -438,17 +454,45 @@ function nextCard() {
         APP_STATE.currentCard = APP_STATE.currentList[APP_STATE.storyIndex];
         APP_STATE.storyIndex++;
     } else {
-        // Casuale pesata (Logica Fisher-Yates + Stats)
+        // Casuale pesata (Logica Fisher-Yates + Stats) con anti-ripetizione
         const shuffled = [...APP_STATE.currentList];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
-        // Trova una carta con livello < 3
+        
+        // Filtra le carte recenti per evitare ripetizioni immediate
+        // Mantieni un massimo di 5 carte recenti O il 30% della lista (prende il valore maggiore)
+        const maxRecent = Math.max(5, Math.floor(APP_STATE.currentList.length * 0.3));
+        
+        // Trova una carta con livello < 3 che NON sia stata mostrata recentemente
         APP_STATE.currentCard = shuffled.find(c => {
             const s = APP_STATE.stats[c.q];
-            return !s || s.level < 3;
-        }) || shuffled[0];
+            const isLowLevel = !s || s.level < 3;
+            const notRecent = !APP_STATE.recentCards.includes(c.q);
+            return isLowLevel && notRecent;
+        });
+        
+        // Se tutte le carte low-level sono state mostrate recentemente,
+        // scegli qualsiasi carta non recente
+        if (!APP_STATE.currentCard) {
+            APP_STATE.currentCard = shuffled.find(c => !APP_STATE.recentCards.includes(c.q));
+        }
+        
+        // Se tutte le carte sono recenti (lista molto piccola), rimuovi le più vecchie
+        if (!APP_STATE.currentCard) {
+            APP_STATE.currentCard = shuffled[0];
+            // Mantieni solo l'ultima carta per evitare ripetizione immediata
+            APP_STATE.recentCards = APP_STATE.recentCards.slice(-1);
+        }
+        
+        // Aggiungi la carta corrente alla lista recenti
+        APP_STATE.recentCards.push(APP_STATE.currentCard.q);
+        
+        // Mantieni solo le ultime N carte
+        if (APP_STATE.recentCards.length > maxRecent) {
+            APP_STATE.recentCards.shift();
+        }
     }
 
     // B. RENDERING DOMANDA
